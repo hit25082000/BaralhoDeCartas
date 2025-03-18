@@ -1,23 +1,25 @@
-﻿namespace BaralhoDeCartas.Models
+﻿using BaralhoDeCartas.Models.Interfaces;
+
+namespace BaralhoDeCartas.Models
 {
-    public class Carta
+    public class Carta : ICarta
     {
-        public string Code { get; set; }
-        public string Image { get; set; }
-        public string Value { get; set; }
-        public string Suit { get; set; }
+        public string Codigo { get; set; }
+        public string ImagemUrl { get; set; }
+        public string ValorSimbolico { get; set; }
+        public string Naipe { get; set; }
 
         public int ValorNumerico
         {
             get
             {
-                return Value switch
+                return ValorSimbolico switch
                 {
                     "ACE" => 14,
                     "KING" => 13,
                     "QUEEN" => 12,
                     "JACK" => 11,
-                    _ => int.TryParse(Value, out int valor) ? valor : 0
+                    _ => int.TryParse(ValorSimbolico, out int valor) ? valor : 0
                 };
             }
         }
@@ -26,13 +28,13 @@
         {
             get
             {
-                return Value switch
+                return ValorSimbolico switch
                 {
                     "ACE" => 11, // Ás pode valer 1 ou 11
                     "KING" => 10,
                     "QUEEN" => 10,
                     "JACK" => 10,
-                    _ => int.TryParse(Value, out int valor) ? valor : 0
+                    _ => int.TryParse(ValorSimbolico, out int valor) ? valor : 0
                 };
             }
         }

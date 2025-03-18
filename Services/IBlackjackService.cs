@@ -1,13 +1,14 @@
 using BaralhoDeCartas.Models;
+using BaralhoDeCartas.Models.Interfaces;
 
 namespace BaralhoDeCartas.Services
 {
     public interface IBlackjackService
     {
-        Task<Baralho> IniciarJogo();
-        Task<List<Jogador>> IniciarRodada(string deckId, int numeroJogadores);
-        Task<Carta> ComprarCarta(string deckId, Jogador jogador);
+        Task<IBaralho> IniciarJogo();
+        Task<List<IJogadorDeBlackjack>> IniciarRodada(string deckId, int numeroJogadores);
+        Task<ICarta> ComprarCarta(string deckId, IJogadorDeBlackjack jogador);
         Task<bool> FinalizarJogo(string deckId);
-        List<Jogador> DeterminarVencedores(List<Jogador> jogadores);
+        List<IJogadorDeBlackjack> DeterminarVencedores(List<IJogadorDeBlackjack> jogadores);
     }
 } 

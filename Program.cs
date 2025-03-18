@@ -1,4 +1,5 @@
 using BaralhoDeCartas.Api;
+using BaralhoDeCartas.Api.Interfaces;
 using BaralhoDeCartas.Services;
 
 var builder = WebApplication.CreateBuilder(args);

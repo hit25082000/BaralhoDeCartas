@@ -1,30 +1,16 @@
-﻿namespace BaralhoDeCartas.Models
-{
-    public class Baralho
-    {
-        public string DeckId { get; set; }
-        public bool Shuffled { get; set; }
-        public int Remaining { get; set; }
+﻿using BaralhoDeCartas.Models.Interfaces;
 
+namespace BaralhoDeCartas.Models
+{
+    public class Baralho : IBaralho
+    {
         public Baralho()
         {
-            Shuffled = true;
+            FoiEmbaralhado = true;
         }
-    }
 
-    public class BaralhoResponse
-    {
-        public bool Success { get; set; }
-        public string Deck_id { get; set; }
-        public bool Shuffled { get; set; }
-        public int Remaining { get; set; }
-    }
-
-    public class CartasResponse
-    {
-        public bool Success { get; set; }
-        public string Deck_id { get; set; }
-        public List<Carta> Cards { get; set; }
-        public int Remaining { get; set; }
+        public string BaralhoId { get; set; }
+        public bool FoiEmbaralhado { get; set; }
+        public int QuantidadeDeCartasRestantes { get; set; }
     }
 }

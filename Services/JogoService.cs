@@ -1,4 +1,4 @@
-using BaralhoDeCartas.Api;
+using BaralhoDeCartas.Api.Interfaces;
 using BaralhoDeCartas.Models;
 
 namespace BaralhoDeCartas.Services
@@ -6,7 +6,7 @@ namespace BaralhoDeCartas.Services
     public class JogoService : IJogoService
     {
         private readonly IBaralhoApiClient _baralhoApiClient;
-        private const int CartasPorJogador = 5;
+        private const int CARTAS_POR_JOGADOR = 5;
 
         public JogoService(IBaralhoApiClient baralhoApiClient)
         {
@@ -21,7 +21,7 @@ namespace BaralhoDeCartas.Services
         public async Task<List<Jogador>> DistribuirCartas(string deckId, int numeroJogadores)
         {
             var jogadores = new List<Jogador>();
-            var totalCartas = numeroJogadores * CartasPorJogador;
+            var totalCartas = numeroJogadores * CARTAS_POR_JOGADOR;
 
             var todasAsCartas = await _baralhoApiClient.ComprarCartas(deckId, totalCartas);
             
@@ -31,7 +31,7 @@ namespace BaralhoDeCartas.Services
                 {
                     Id = i + 1,
                     Nome = $"Jogador {i + 1}",
-                    Cartas = todasAsCartas.Skip(i * CartasPorJogador).Take(CartasPorJogador).ToList()
+                    Cartas = todasAsCartas.Skip(i * CARTAS_POR_JOGADOR).Take(CARTAS_POR_JOGADOR).ToList()
                 };
                 jogadores.Add(jogador);
             }

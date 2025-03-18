@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using BaralhoDeCartas.Services;
 using BaralhoDeCartas.Models;
+using BaralhoDeCartas.Models.Interfaces;
 
 namespace BaralhoDeCartas.Controllers
 {
@@ -16,7 +17,7 @@ namespace BaralhoDeCartas.Controllers
         }
 
         [HttpPost("iniciar")]
-        public async Task<ActionResult<Baralho>> IniciarJogo()
+        public async Task<ActionResult<IBaralho>> IniciarJogo()
         {
             try
             {

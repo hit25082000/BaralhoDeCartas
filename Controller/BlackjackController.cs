@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using BaralhoDeCartas.Services;
 using BaralhoDeCartas.Models;
+using BaralhoDeCartas.Models.Interfaces;
 
 namespace BaralhoDeCartas.Controllers
 {
@@ -16,7 +17,7 @@ namespace BaralhoDeCartas.Controllers
         }
 
         [HttpPost("iniciar")]
-        public async Task<ActionResult<Baralho>> IniciarJogo()
+        public async Task<ActionResult<IBaralho>> IniciarJogo()
         {
             try
             {
@@ -30,7 +31,7 @@ namespace BaralhoDeCartas.Controllers
         }
 
         [HttpPost("{deckId}/iniciar-rodada")]
-        public async Task<ActionResult<List<Jogador>>> IniciarRodada(string deckId, [FromQuery] int numeroJogadores)
+        public async Task<ActionResult<List<IJogadorDeBlackjack>>> IniciarRodada(string deckId, [FromQuery] int numeroJogadores)
         {
             try
             {
@@ -49,22 +50,18 @@ namespace BaralhoDeCartas.Controllers
         }
 
         [HttpPost("{deckId}/jogador/{jogadorId}/comprar")]
-        public async Task<ActionResult<Carta>> ComprarCarta(string deckId, int jogadorId, [FromBody] Jogador jogador)
+        public async Task<ActionResult<ICarta>> ComprarCarta(string deckId, int jogadorId, [FromBody] IJogadorDeBlackjack jogador)
         {
             try
             {
-                if (jogador.Id != jogadorId)
+                if (jogador.JogadorId != jogadorId)
                 {
                     return BadRequest("ID do jogador inválido.");
                 }
 
                 var novaCarta = await _blackjackService.ComprarCarta(deckId, jogador);
-                return Ok(new
-                {
-                    Carta = novaCarta,
-                    NovaPontuacao = jogador.CalcularPontuacao(),
-                    Estourou = jogador.Estourou
-                });
+
+                return Ok(novaCarta);
             }
             catch (InvalidOperationException ex)
             {
@@ -77,11 +74,11 @@ namespace BaralhoDeCartas.Controllers
         }
 
         [HttpPost("{deckId}/jogador/{jogadorId}/parar")]
-        public ActionResult<Jogador> PararJogador(int jogadorId, [FromBody] Jogador jogador)
+        public ActionResult<IJogadorDeBlackjack> PararJogador(int jogadorId, [FromBody] IJogadorDeBlackjack jogador)
         {
             try
             {
-                if (jogador.Id != jogadorId)
+                if (jogador.JogadorId != jogadorId)
                 {
                     return BadRequest("ID do jogador inválido.");
                 }
@@ -96,7 +93,7 @@ namespace BaralhoDeCartas.Controllers
         }
 
         [HttpPost("{deckId}/finalizar")]
-        public async Task<ActionResult<List<Jogador>>> FinalizarRodada(string deckId, [FromBody] List<Jogador> jogadores)
+        public async Task<ActionResult<List<IJogadorDeBlackjack>>> FinalizarRodada(string deckId, [FromBody] List<IJogadorDeBlackjack> jogadores)
         {
             try
             {
