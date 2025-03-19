@@ -1,45 +1,44 @@
 using BaralhoDeCartas.Api.Interfaces;
-using BaralhoDeCartas.Models;
+using BaralhoDeCartas.Factory.Interfaces;
+using BaralhoDeCartas.Models.Interfaces;
+using BaralhoDeCartas.Services.Interfaces;
 
 namespace BaralhoDeCartas.Services
 {
     public class JogoService : IJogoService
     {
         private readonly IBaralhoApiClient _baralhoApiClient;
+        private readonly IJogadorFactory _jogadorFactory;
         private const int CARTAS_POR_JOGADOR = 5;
 
-        public JogoService(IBaralhoApiClient baralhoApiClient)
+        public JogoService(IBaralhoApiClient baralhoApiClient, IJogadorFactory jogadorFactory)
         {
             _baralhoApiClient = baralhoApiClient;
+            _jogadorFactory = jogadorFactory;
         }
 
-        public async Task<Baralho> IniciarNovoJogo()
+        public async Task<IBaralho> IniciarNovoJogo()
         {
             return await _baralhoApiClient.CriarNovoBaralho();
         }
 
-        public async Task<List<Jogador>> DistribuirCartas(string deckId, int numeroJogadores)
+        public async Task<List<IJogador>> DistribuirCartas(string deckId, int numeroJogadores)
         {
-            var jogadores = new List<Jogador>();
+            var jogadores = new List<IJogador>();
             var totalCartas = numeroJogadores * CARTAS_POR_JOGADOR;
 
             var todasAsCartas = await _baralhoApiClient.ComprarCartas(deckId, totalCartas);
             
             for (int i = 0; i < numeroJogadores; i++)
             {
-                var jogador = new Jogador
-                {
-                    Id = i + 1,
-                    Nome = $"Jogador {i + 1}",
-                    Cartas = todasAsCartas.Skip(i * CARTAS_POR_JOGADOR).Take(CARTAS_POR_JOGADOR).ToList()
-                };
+                IJogador jogador = _jogadorFactory.CriarJogador(todasAsCartas, CARTAS_POR_JOGADOR, i);               
                 jogadores.Add(jogador);
             }
 
             return jogadores;
         }
 
-        public async Task<Jogador> DeterminarVencedor(List<Jogador> jogadores)
+        public async Task<IJogador> DeterminarVencedor(List<IJogador> jogadores)
         {
             return jogadores
                 .OrderByDescending(j => j.ObterCartaMaisAlta()?.ValorNumerico ?? 0)

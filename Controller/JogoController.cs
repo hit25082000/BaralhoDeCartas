@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using BaralhoDeCartas.Services;
-using BaralhoDeCartas.Models;
 using BaralhoDeCartas.Models.Interfaces;
+using BaralhoDeCartas.Services.Interfaces;
 
 namespace BaralhoDeCartas.Controllers
 {
@@ -31,7 +30,7 @@ namespace BaralhoDeCartas.Controllers
         }
 
         [HttpPost("{deckId}/distribuir")]
-        public async Task<ActionResult<List<Jogador>>> DistribuirCartas(string deckId, [FromQuery] int numeroJogadores)
+        public async Task<ActionResult<List<IJogador>>> DistribuirCartas(string deckId, [FromQuery] int numeroJogadores)
         {
             try
             {
@@ -50,13 +49,13 @@ namespace BaralhoDeCartas.Controllers
         }
 
         [HttpGet("{deckId}/vencedor")]
-        public async Task<ActionResult<Jogador>> ObterVencedor([FromBody] List<Jogador> jogadores)
+        public async Task<ActionResult<IJogador>> ObterVencedor([FromBody] List<IJogador> jogadores)
         {
             try
             {
-                if (jogadores == null || !jogadores.Any())
+                if (jogadores == null || jogadores.Count == 0)
                 {
-                    return BadRequest("A lista de jogadores não pode estar vazia.");
+                    return BadRequest(new { erro = "A lista de jogadores não pode estar vazia." });
                 }
 
                 var vencedor = await _jogoService.DeterminarVencedor(jogadores);

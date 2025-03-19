@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using BaralhoDeCartas.Factory.Interfaces;
+﻿using BaralhoDeCartas.Factory.Interfaces;
 using BaralhoDeCartas.Models;
 using BaralhoDeCartas.Models.ApiResponses;
 using BaralhoDeCartas.Models.Interfaces;

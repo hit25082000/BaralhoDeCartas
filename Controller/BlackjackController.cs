@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using BaralhoDeCartas.Services;
-using BaralhoDeCartas.Models;
 using BaralhoDeCartas.Models.Interfaces;
+using BaralhoDeCartas.Services.Interfaces;
 
 namespace BaralhoDeCartas.Controllers
 {

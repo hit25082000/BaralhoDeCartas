@@ -1,48 +1,44 @@
 using BaralhoDeCartas.Api.Interfaces;
-using BaralhoDeCartas.Models;
+using BaralhoDeCartas.Factory.Interfaces;
+using BaralhoDeCartas.Models.Interfaces;
+using BaralhoDeCartas.Services.Interfaces;
 
 namespace BaralhoDeCartas.Services
 {
     public class BlackjackService : IBlackjackService
     {
         private readonly IBaralhoApiClient _baralhoApiClient;
+        private readonly IJogadorFactory _jogadorFactory;
         private const int CartasIniciaisPorJogador = 2;
-
-        public BlackjackService(IBaralhoApiClient baralhoApiClient)
+     
+        public BlackjackService(IBaralhoApiClient baralhoApiClient,IJogadorFactory jogadorFactory)
         {
             _baralhoApiClient = baralhoApiClient;
+            _jogadorFactory = jogadorFactory;
         }
 
-        public async Task<Baralho> IniciarJogo()
+        public async Task<IBaralho> IniciarJogo()
         {
             return await _baralhoApiClient.CriarNovoBaralho();
         }
 
-        public async Task<List<JogadorDeBlackjack>> IniciarRodada(string deckId, int numeroJogadores)
+        public async Task<List<IJogadorDeBlackjack>> IniciarRodada(string deckId, int numeroJogadores)
         {
-            var jogadores = new List<JogadorDeBlackjack>();
+            var jogadores = new List<IJogadorDeBlackjack>();
             var totalCartas = numeroJogadores * CartasIniciaisPorJogador;
 
             var todasAsCartas = await _baralhoApiClient.ComprarCartas(deckId, totalCartas);
             
             for (int i = 0; i < numeroJogadores; i++)
             {
-                var jogador = new JogadorDeBlackjack
-                {
-                    Id = i + 1,
-                    Nome = $"Jogador {i + 1}",
-                    Cartas = todasAsCartas
-                        .Skip(i * CartasIniciaisPorJogador)
-                        .Take(CartasIniciaisPorJogador)
-                        .ToList()
-                };
+                IJogadorDeBlackjack jogador = _jogadorFactory.CriarJogadorDeBlackJack(todasAsCartas, CartasIniciaisPorJogador,i);
                 jogadores.Add(jogador);
             }
 
             return jogadores;
         }
 
-        public async Task<Carta> ComprarCarta(string deckId, JogadorDeBlackjack jogador)
+        public async Task<ICarta> ComprarCarta(string deckId, IJogadorDeBlackjack jogador)
         {
             if (jogador.Parou || jogador.Estourou)
             {
@@ -60,13 +56,13 @@ namespace BaralhoDeCartas.Services
             return novaCarta;
         }
 
-        public List<JogadorDeBlackjack> DeterminarVencedores(List<JogadorDeBlackjack> jogadores)
+        public List<IJogadorDeBlackjack> DeterminarVencedores(List<IJogadorDeBlackjack> jogadores)
         {
             var jogadoresValidos = jogadores.Where(j => !j.Estourou).ToList();
 
             if (!jogadoresValidos.Any())
             {
-                return new List<JogadorDeBlackjack>();
+                return new List<IJogadorDeBlackjack>();
             }
 
             var jogadoresComBlackjack = jogadoresValidos.Where(j => j.TemBlackjack()).ToList();

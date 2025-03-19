@@ -1,7 +1,7 @@
 using BaralhoDeCartas.Models;
 using BaralhoDeCartas.Models.Interfaces;
 
-namespace BaralhoDeCartas.Services
+namespace BaralhoDeCartas.Services.Interfaces
 {
     public interface IBlackjackService
     {
