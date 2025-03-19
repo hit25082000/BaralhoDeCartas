@@ -13,30 +13,28 @@
 
     <div class="row g-4">
         <!-- Maior Carta -->
-        <div class="col-md-6">
-            <div class="card game-card h-100 animate__animated animate__fadeInLeft">
-                <div class="card-body p-0">
-                    <div class="game-card-inner">
-                        <div class="game-card-front">
-                            <div class="d-flex align-items-center justify-content-center h-100">
-                                <div class="text-center">
-                                    <i class="bi bi-card-club display-1 text-primary"></i>
-                                    <h3 class="mt-3">Maior Carta</h3>
-                                </div>
+        <div class="col-md-6 d-flex justify-content-center">
+            <div class="playing-card">
+                <div class="playing-card-inner">
+                    <div class="playing-card-back">
+                        <div class="card-pattern"></div>
+                    </div>
+                    <div class="playing-card-front">
+                        <div class="card-content">
+                            <div class="card-corner top-left">
+                                <span class="card-value">A</span>
+                                <span class="card-suit">♠</span>
                             </div>
-                        </div>
-                        <div class="game-card-back">
-                            <div class="p-4">
-                                <h3 class="card-title">Maior Carta</h3>
-                                <p class="card-text">Um jogo simples e divertido onde o objetivo é ter a maior carta. Perfeito para iniciantes!</p>
-                                <ul class="list-unstyled">
-                                    <li><i class="bi bi-check-circle-fill text-success me-2"></i>Regras simples</li>
-                                    <li><i class="bi bi-check-circle-fill text-success me-2"></i>Rápido e divertido</li>
-                                    <li><i class="bi bi-check-circle-fill text-success me-2"></i>Ideal para todos</li>
-                                </ul>
-                                <a href="/Jogos/MaiorCarta" class="btn btn-primary w-100 mt-3">
+                            <div class="card-center">
+                                <h3>Maior Carta</h3>
+                                <p>Um jogo simples e divertido onde o objetivo é ter a maior carta.</p>
+                                <a href="/Jogos/MaiorCarta" class="btn btn-primary mt-3">
                                     <i class="bi bi-play-circle me-2"></i>Jogar Agora
                                 </a>
+                            </div>
+                            <div class="card-corner bottom-right">
+                                <span class="card-value">A</span>
+                                <span class="card-suit">♠</span>
                             </div>
                         </div>
                     </div>
@@ -45,30 +43,28 @@
         </div>
 
         <!-- Blackjack -->
-        <div class="col-md-6">
-            <div class="card game-card h-100 animate__animated animate__fadeInRight">
-                <div class="card-body p-0">
-                    <div class="game-card-inner">
-                        <div class="game-card-front">
-                            <div class="d-flex align-items-center justify-content-center h-100">
-                                <div class="text-center">
-                                    <i class="bi bi-card-diamond display-1 text-danger"></i>
-                                    <h3 class="mt-3">Blackjack</h3>
-                                </div>
+        <div class="col-md-6 d-flex justify-content-center">
+            <div class="playing-card">
+                <div class="playing-card-inner">
+                    <div class="playing-card-back">
+                        <div class="card-pattern"></div>
+                    </div>
+                    <div class="playing-card-front">
+                        <div class="card-content">
+                            <div class="card-corner top-left">
+                                <span class="card-value">K</span>
+                                <span class="card-suit">♥</span>
                             </div>
-                        </div>
-                        <div class="game-card-back">
-                            <div class="p-4">
-                                <h3 class="card-title">Blackjack</h3>
-                                <p class="card-text">O clássico jogo de cartas onde o objetivo é chegar mais próximo de 21 sem ultrapassar.</p>
-                                <ul class="list-unstyled">
-                                    <li><i class="bi bi-check-circle-fill text-success me-2"></i>Estratégia profunda</li>
-                                    <li><i class="bi bi-check-circle-fill text-success me-2"></i>Multiplayer</li>
-                                    <li><i class="bi bi-check-circle-fill text-success me-2"></i>Modo treino</li>
-                                </ul>
-                                <a href="/Jogos/Blackjack" class="btn btn-primary w-100 mt-3">
+                            <div class="card-center">
+                                <h3>Blackjack</h3>
+                                <p>O clássico jogo de 21! Tente chegar mais próximo possível sem ultrapassar.</p>
+                                <a href="/Jogos/Blackjack" class="btn btn-primary mt-3">
                                     <i class="bi bi-play-circle me-2"></i>Jogar Agora
                                 </a>
+                            </div>
+                            <div class="card-corner bottom-right">
+                                <span class="card-value">K</span>
+                                <span class="card-suit">♥</span>
                             </div>
                         </div>
                     </div>
@@ -79,42 +75,132 @@
 </div>
 
 <style>
-.game-card {
+.playing-card {
     perspective: 1000px;
-    cursor: pointer;
+        width: 285px;
     height: 400px;
+    margin-bottom: 2rem;
 }
 
-.game-card-inner {
+.playing-card-inner {
     position: relative;
     width: 100%;
     height: 100%;
     text-align: center;
     transition: transform 0.8s;
     transform-style: preserve-3d;
+    cursor: pointer;
 }
 
-.game-card:hover .game-card-inner {
+.playing-card:hover .playing-card-inner {
     transform: rotateY(180deg);
 }
 
-.game-card-front, .game-card-back {
+.playing-card-front, .playing-card-back {
     position: absolute;
     width: 100%;
     height: 100%;
+    -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
     border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.playing-card-front {
     background: white;
-}
-
-.game-card-back {
     transform: rotateY(180deg);
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
-.game-card-front {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+.playing-card-back {
+    background: linear-gradient(45deg, #1a237e, #0d47a1);
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: rotateY(0deg);
+    overflow: hidden;
 }
+
+.card-pattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: repeating-linear-gradient(
+        45deg,
+        rgba(255,255,255,0.1) 0px,
+        rgba(255,255,255,0.1) 10px,
+        transparent 10px,
+        transparent 20px
+    );
+    background-size: 28px 28px;
+}
+
+.card-pattern::before {
+    content: '♠♣♥♦';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    color: rgba(255,255,255,0.2);
+}
+
+.card-content {
+    position: relative;
+    height: 100%;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    padding: 15px;
+}
+
+.card-corner {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.top-left {
+    top: 10px;
+    left: 10px;
+}
+
+.bottom-right {
+    bottom: 10px;
+    right: 10px;
+    transform: rotate(180deg);
+}
+
+.card-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.card-suit {
+    font-size: 1.5rem;
+}
+
+.card-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+}
+
+/* Ajuste para o Blackjack */
+.col-md-6:nth-child(2) .card-suit,
+.col-md-6:nth-child(2) .card-value {
+    color: #dc3545;
+}
+
 </style>
 
 @section Scripts {
