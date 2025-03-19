@@ -1,0 +1,166 @@
+.score-display {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.cards-container {
+    min-height: 160px;
+    padding: 10px;
+    gap: 5px;
+}
+
+.playing-card {
+    perspective: 1000px;
+    width: 100px;
+    height: 140px;
+    margin: 5px;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+.playing-card:hover {
+    transform: translateY(-10px);
+}
+
+.playing-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+}
+
+.playing-card.flipped .playing-card-inner {
+    transform: rotateY(180deg);
+}
+
+.playing-card-front, .playing-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.playing-card-front {
+    background: white;
+    transform: rotateY(180deg);
+    padding: 5px;
+}
+
+.playing-card-back {
+    background: linear-gradient(45deg, #1a237e, #0d47a1);
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: rotateY(0deg);
+    overflow: hidden;
+}
+
+.card-pattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: repeating-linear-gradient(
+        45deg,
+        rgba(255,255,255,0.1) 0px,
+        rgba(255,255,255,0.1) 10px,
+        transparent 10px,
+        transparent 20px
+    );
+    background-size: 28px 28px;
+}
+
+.card-pattern::before {
+    content: '♠♣♥♦';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    color: rgba(255,255,255,0.2);
+}
+
+.card-content {
+    position: relative;
+    height: 100%;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    padding: 2px;
+}
+
+.card-corner {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.top-left {
+    top: 2px;
+    left: 2px;
+}
+
+.bottom-right {
+    bottom: 2px;
+    right: 2px;
+    transform: rotate(180deg);
+}
+
+.card-value {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.card-suit {
+    font-size: 1rem;
+}
+
+.card-big-symbol {
+    font-size: 2.5rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.card-red {
+    color: #dc3545;
+}
+
+.card-black {
+    color: #212529;
+}
+
+.card-highlight {
+    border: 2px solid #28a745;
+    box-shadow: 0 0 15px rgba(40, 167, 69, 0.5);
+}
+
+@media (max-width: 992px) {
+    .playing-card {
+        width: 80px;
+        height: 112px;
+    }
+    
+    .card-big-symbol {
+        font-size: 2rem;
+    }
+    
+    .card-value, .card-suit {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 768px) {
+    #control-buttons button {
+        margin-bottom: 10px;
+        width: 100%;
+    }
+} 
