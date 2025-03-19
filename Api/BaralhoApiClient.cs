@@ -50,9 +50,9 @@ namespace BaralhoDeCartas.Api
             return _baralhoFactory.CriarBaralho(baralhoResponse);
         }
 
-        public async Task<List<ICarta>> ComprarCartas(string deckId, int quantidade)
+        public async Task<List<ICarta>> ComprarCartas(string baralhoId, int quantidade)
         {
-            var response = await _httpClient.GetAsync($"{BaseUrl}/{deckId}/draw/?count={quantidade}");
+            var response = await _httpClient.GetAsync($"{BaseUrl}/{baralhoId}/draw/?count={quantidade}");
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
@@ -61,9 +61,9 @@ namespace BaralhoDeCartas.Api
             return _cartaFactory.CriarCartas(cartasResponse);
         }
 
-        public async Task<bool> RetornarCartasAoBaralho(string deckId)
+        public async Task<bool> RetornarCartasAoBaralho(string baralhoId)
         {
-            var response = await _httpClient.GetAsync($"{BaseUrl}/{deckId}/return/");
+            var response = await _httpClient.GetAsync($"{BaseUrl}/{baralhoId}/return/");
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();

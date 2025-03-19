@@ -22,12 +22,12 @@ namespace BaralhoDeCartas.Services
             return await _baralhoApiClient.CriarNovoBaralho();
         }
 
-        public async Task<List<IJogadorDeBlackjack>> IniciarRodada(string deckId, int numeroJogadores)
+        public async Task<List<IJogadorDeBlackjack>> IniciarRodada(string baralhoId, int numeroJogadores)
         {
             var jogadores = new List<IJogadorDeBlackjack>();
             var totalCartas = numeroJogadores * CartasIniciaisPorJogador;
 
-            var todasAsCartas = await _baralhoApiClient.ComprarCartas(deckId, totalCartas);
+            var todasAsCartas = await _baralhoApiClient.ComprarCartas(baralhoId, totalCartas);
             
             for (int i = 0; i < numeroJogadores; i++)
             {
@@ -38,14 +38,14 @@ namespace BaralhoDeCartas.Services
             return jogadores;
         }
 
-        public async Task<ICarta> ComprarCarta(string deckId, IJogadorDeBlackjack jogador)
+        public async Task<ICarta> ComprarCarta(string baralhoId, IJogadorDeBlackjack jogador)
         {
             if (jogador.Parou || jogador.Estourou)
             {
                 throw new InvalidOperationException($"O jogador {jogador.Nome} não pode comprar mais cartas.");
             }
 
-            var cartas = await _baralhoApiClient.ComprarCartas(deckId, 1);
+            var cartas = await _baralhoApiClient.ComprarCartas(baralhoId, 1);
             var novaCarta = cartas.FirstOrDefault();
             
             if (novaCarta != null)
@@ -76,9 +76,9 @@ namespace BaralhoDeCartas.Services
             return jogadoresValidos.Where(j => j.CalcularPontuacao() == maiorPontuacao).ToList();
         }
 
-        public async Task<bool> FinalizarJogo(string deckId)
+        public async Task<bool> FinalizarJogo(string baralhoId)
         {
-            return await _baralhoApiClient.RetornarCartasAoBaralho(deckId);
+            return await _baralhoApiClient.RetornarCartasAoBaralho(baralhoId);
         }
     }
 } 

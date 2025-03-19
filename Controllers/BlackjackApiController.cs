@@ -6,11 +6,11 @@ namespace BaralhoDeCartas.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class BlackjackController : ControllerBase
+    public class BlackjackApiController : ControllerBase
     {
         private readonly IBlackjackService _blackjackService;
 
-        public BlackjackController(IBlackjackService blackjackService)
+        public BlackjackApiController(IBlackjackService blackjackService)
         {
             _blackjackService = blackjackService;
         }
@@ -29,8 +29,8 @@ namespace BaralhoDeCartas.Controllers
             }
         }
 
-        [HttpPost("{deckId}/iniciar-rodada")]
-        public async Task<ActionResult<List<IJogadorDeBlackjack>>> IniciarRodada(string deckId, [FromQuery] int numeroJogadores)
+        [HttpPost("{baralhoId}/iniciar-rodada")]
+        public async Task<ActionResult<List<IJogadorDeBlackjack>>> IniciarRodada(string baralhoId, [FromQuery] int numeroJogadores)
         {
             try
             {
@@ -39,7 +39,7 @@ namespace BaralhoDeCartas.Controllers
                     return BadRequest("O número de jogadores deve ser maior que zero.");
                 }
 
-                var jogadores = await _blackjackService.IniciarRodada(deckId, numeroJogadores);
+                var jogadores = await _blackjackService.IniciarRodada(baralhoId, numeroJogadores);
                 return Ok(jogadores);
             }
             catch (Exception ex)
@@ -48,8 +48,8 @@ namespace BaralhoDeCartas.Controllers
             }
         }
 
-        [HttpPost("{deckId}/jogador/{jogadorId}/comprar")]
-        public async Task<ActionResult<ICarta>> ComprarCarta(string deckId, int jogadorId, [FromBody] IJogadorDeBlackjack jogador)
+        [HttpPost("{baralhoId}/jogador/{jogadorId}/comprar")]
+        public async Task<ActionResult<ICarta>> ComprarCarta(string baralhoId, int jogadorId, [FromBody] IJogadorDeBlackjack jogador)
         {
             try
             {
@@ -58,7 +58,7 @@ namespace BaralhoDeCartas.Controllers
                     return BadRequest("ID do jogador inválido.");
                 }
 
-                var novaCarta = await _blackjackService.ComprarCarta(deckId, jogador);
+                var novaCarta = await _blackjackService.ComprarCarta(baralhoId, jogador);
 
                 return Ok(novaCarta);
             }
@@ -72,7 +72,7 @@ namespace BaralhoDeCartas.Controllers
             }
         }
 
-        [HttpPost("{deckId}/jogador/{jogadorId}/parar")]
+        [HttpPost("{baralhoId}/jogador/{jogadorId}/parar")]
         public ActionResult<IJogadorDeBlackjack> PararJogador(int jogadorId, [FromBody] IJogadorDeBlackjack jogador)
         {
             try
@@ -91,13 +91,13 @@ namespace BaralhoDeCartas.Controllers
             }
         }
 
-        [HttpPost("{deckId}/finalizar")]
-        public async Task<ActionResult<List<IJogadorDeBlackjack>>> FinalizarRodada(string deckId, [FromBody] List<IJogadorDeBlackjack> jogadores)
+        [HttpPost("{baralhoId}/finalizar")]
+        public async Task<ActionResult<List<IJogadorDeBlackjack>>> FinalizarRodada(string baralhoId, [FromBody] List<IJogadorDeBlackjack> jogadores)
         {
             try
             {
                 var vencedores = _blackjackService.DeterminarVencedores(jogadores);
-                await _blackjackService.FinalizarJogo(deckId);
+                await _blackjackService.FinalizarJogo(baralhoId);
 
                 return Ok(new
                 {

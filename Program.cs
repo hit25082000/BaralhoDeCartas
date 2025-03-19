@@ -1,5 +1,7 @@
 using BaralhoDeCartas.Api;
 using BaralhoDeCartas.Api.Interfaces;
+using BaralhoDeCartas.Factory;
+using BaralhoDeCartas.Factory.Interfaces;
 using BaralhoDeCartas.Services;
 using BaralhoDeCartas.Services.Interfaces;
 
@@ -14,9 +16,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpClient<IBaralhoApiClient, BaralhoApiClient>();
 
 // Registrar serviços
-builder.Services.AddScoped<IBaralhoApiClient, BaralhoApiClient>();
 builder.Services.AddScoped<IJogoService, JogoService>();
 builder.Services.AddScoped<IBlackjackService, BlackjackService>();
+builder.Services.AddScoped<IJogadorFactory, JogadorFactory>();
+builder.Services.AddScoped<ICartaFactory, CartaFactory>();
+builder.Services.AddScoped<IBaralhoFactory, BaralhoFactory>();
 
 var app = builder.Build();
 

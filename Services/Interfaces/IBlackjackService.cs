@@ -6,9 +6,9 @@ namespace BaralhoDeCartas.Services.Interfaces
     public interface IBlackjackService
     {
         Task<IBaralho> IniciarJogo();
-        Task<List<IJogadorDeBlackjack>> IniciarRodada(string deckId, int numeroJogadores);
-        Task<ICarta> ComprarCarta(string deckId, IJogadorDeBlackjack jogador);
-        Task<bool> FinalizarJogo(string deckId);
+        Task<List<IJogadorDeBlackjack>> IniciarRodada(string baralhoId, int numeroJogadores);
+        Task<ICarta> ComprarCarta(string baralhoId, IJogadorDeBlackjack jogador);
+        Task<bool> FinalizarJogo(string baralhoId);
         List<IJogadorDeBlackjack> DeterminarVencedores(List<IJogadorDeBlackjack> jogadores);
     }
 } 

@@ -22,12 +22,12 @@ namespace BaralhoDeCartas.Services
             return await _baralhoApiClient.CriarNovoBaralho();
         }
 
-        public async Task<List<IJogador>> DistribuirCartas(string deckId, int numeroJogadores)
+        public async Task<List<IJogador>> DistribuirCartas(string baralhoId, int numeroJogadores)
         {
             var jogadores = new List<IJogador>();
             var totalCartas = numeroJogadores * CARTAS_POR_JOGADOR;
 
-            var todasAsCartas = await _baralhoApiClient.ComprarCartas(deckId, totalCartas);
+            var todasAsCartas = await _baralhoApiClient.ComprarCartas(baralhoId, totalCartas);
             
             for (int i = 0; i < numeroJogadores; i++)
             {
@@ -45,9 +45,9 @@ namespace BaralhoDeCartas.Services
                 .FirstOrDefault();
         }
 
-        public async Task<bool> FinalizarJogo(string deckId)
+        public async Task<bool> FinalizarJogo(string baralhoId)
         {
-            return await _baralhoApiClient.RetornarCartasAoBaralho(deckId);
+            return await _baralhoApiClient.RetornarCartasAoBaralho(baralhoId);
         }
     }
 } 

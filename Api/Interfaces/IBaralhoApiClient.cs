@@ -6,7 +6,7 @@ namespace BaralhoDeCartas.Api.Interfaces
     {
         Task<IBaralho> CriarNovoBaralho();
         Task<IBaralho> EmbaralharBaralho(string baralhoId, bool embaralharSomenteCartasRestantes);
-        Task<List<ICarta>> ComprarCartas(string deckId, int quantidade);
-        Task<bool> RetornarCartasAoBaralho(string deckId);
+        Task<List<ICarta>> ComprarCartas(string baralhoId, int quantidade);
+        Task<bool> RetornarCartasAoBaralho(string baralhoId);
     }
 } 

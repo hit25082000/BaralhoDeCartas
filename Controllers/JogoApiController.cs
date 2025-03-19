@@ -6,11 +6,11 @@ namespace BaralhoDeCartas.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class JogoController : ControllerBase
+    public class JogoApiController : ControllerBase
     {
         private readonly IJogoService _jogoService;
 
-        public JogoController(IJogoService jogoService)
+        public JogoApiController(IJogoService jogoService)
         {
             _jogoService = jogoService;
         }
@@ -29,8 +29,8 @@ namespace BaralhoDeCartas.Controllers
             }
         }
 
-        [HttpPost("{deckId}/distribuir")]
-        public async Task<ActionResult<List<IJogador>>> DistribuirCartas(string deckId, [FromQuery] int numeroJogadores)
+        [HttpPost("{baralhoId}/distribuir")]
+        public async Task<ActionResult<List<IJogador>>> DistribuirCartas(string baralhoId, [FromQuery] int numeroJogadores)
         {
             try
             {
@@ -39,7 +39,7 @@ namespace BaralhoDeCartas.Controllers
                     return BadRequest("O número de jogadores deve ser maior que zero.");
                 }
 
-                var jogadores = await _jogoService.DistribuirCartas(deckId, numeroJogadores);
+                var jogadores = await _jogoService.DistribuirCartas(baralhoId, numeroJogadores);
                 return Ok(jogadores);
             }
             catch (Exception ex)
@@ -48,7 +48,7 @@ namespace BaralhoDeCartas.Controllers
             }
         }
 
-        [HttpGet("{deckId}/vencedor")]
+        [HttpGet("/vencedor")]
         public async Task<ActionResult<IJogador>> ObterVencedor([FromBody] List<IJogador> jogadores)
         {
             try
@@ -67,12 +67,12 @@ namespace BaralhoDeCartas.Controllers
             }
         }
 
-        [HttpPost("{deckId}/finalizar")]
-        public async Task<ActionResult<bool>> FinalizarJogo(string deckId)
+        [HttpPost("{baralhoId}/finalizar")]
+        public async Task<ActionResult<bool>> FinalizarJogo(string baralhoId)
         {
             try
             {
-                var resultado = await _jogoService.FinalizarJogo(deckId);
+                var resultado = await _jogoService.FinalizarJogo(baralhoId);
                 return Ok(resultado);
             }
             catch (Exception ex)
