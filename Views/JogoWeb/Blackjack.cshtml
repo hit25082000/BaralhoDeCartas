@@ -1,0 +1,93 @@
+@model BaralhoDeCartas.Models.Interfaces.IBaralho
+
+@{
+    ViewData["Title"] = "Blackjack";
+}
+
+<div class="jogo-container">
+    <h1 class="titulo-jogo">Blackjack</h1>
+    
+    <div class="info-baralho">
+        <p>ID do Baralho: @Model.BaralhoId</p>
+        <p>Cartas Restantes: @Model.QuantidadeDeCartasRestantes</p>
+        <p>Status: @(Model.FoiEmbaralhado ? "Embaralhado" : "Não Embaralhado")</p>
+    </div>
+
+    <div class="acoes-jogo">
+        <button class="btn btn-primary btn-lg" onclick="iniciarRodada()">
+            Iniciar Rodada
+        </button>
+    </div>
+
+    <div id="area-jogadores" class="area-jogadores">
+        <!-- Os jogadores serão inseridos aqui dinamicamente -->
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function iniciarRodada() {
+            try {
+                const response = await fetch(`/JogoWeb/IniciarRodada?baralhoId=@Model.BaralhoId&numeroJogadores=2`);
+                const jogadores = await response.json();
+                
+                const areaJogadores = document.getElementById('area-jogadores');
+                areaJogadores.innerHTML = '';
+                
+                jogadores.forEach(jogador => {
+                    const jogadorElement = document.createElement('div');
+                    jogadorElement.className = 'jogador-card';
+                    jogadorElement.innerHTML = `
+                        <h3>${jogador.nome}</h3>
+                        <div class="cartas-jogador">
+                            ${jogador.cartas.map(carta => `
+                                <div class="carta">
+                                    <div class="carta-valor">${carta.valor}</div>
+                                    <div class="carta-naipe">${carta.naipe}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="acoes-jogador">
+                            <button class="btn btn-success" onclick="comprarCarta('${jogador.jogadorId}')">
+                                Comprar Carta
+                            </button>
+                            <button class="btn btn-danger" onclick="parar('${jogador.jogadorId}')">
+                                Parar
+                            </button>
+                        </div>
+                    `;
+                    areaJogadores.appendChild(jogadorElement);
+                });
+            } catch (error) {
+                console.error('Erro ao iniciar rodada:', error);
+            }
+        }
+
+        async function comprarCarta(jogadorId) {
+            try {
+                const response = await fetch(`/JogoWeb/ComprarCarta?baralhoId=@Model.BaralhoId&jogadorId=${jogadorId}`);
+                const carta = await response.json();
+                
+                // Atualizar a interface com a nova carta
+                const jogadorElement = document.querySelector(`[data-jogador-id="${jogadorId}"]`);
+                const cartasJogador = jogadorElement.querySelector('.cartas-jogador');
+                
+                const cartaElement = document.createElement('div');
+                cartaElement.className = 'carta';
+                cartaElement.innerHTML = `
+                    <div class="carta-valor">${carta.valor}</div>
+                    <div class="carta-naipe">${carta.naipe}</div>
+                `;
+                
+                cartasJogador.appendChild(cartaElement);
+            } catch (error) {
+                console.error('Erro ao comprar carta:', error);
+            }
+        }
+
+        async function parar(jogadorId) {
+            // Implementar lógica para parar
+            console.log(`Jogador ${jogadorId} parou`);
+        }
+    </script>
+} 
