@@ -9,12 +9,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/BaralhoDeCartas.styles.css" asp-append-version="true" />
+    <style>
+        .nav-link:hover, .navbar-brand:hover {
+            cursor: pointer;
+            color: var(--bs-primary) !important;
+        }
+    </style>
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
-                <a class="navbar-brand d-flex align-items-center" asp-area="" asp-page="/Index">
+                <a class="navbar-brand d-flex align-items-center" href="@Url.Action("Index", "Home")">
                     <i class="bi bi-card-club text-primary me-2"></i>
                     <span class="fw-bold">Jogos de Baralho</span>
                 </a>
@@ -25,12 +31,12 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">
+                            <a class="nav-link text-dark" href="@Url.Action("Index", "Home")">
                                 <i class="bi bi-house-door me-1"></i>Home
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Jogos/Index">
+                            <a class="nav-link text-dark" href="@Url.Action("Index", "Jogos")">
                                 <i class="bi bi-controller me-1"></i>Jogos
                             </a>
                         </li>
