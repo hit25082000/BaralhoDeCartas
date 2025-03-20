@@ -2,6 +2,9 @@
 using BaralhoDeCartas.Services.Interfaces;
 using BaralhoDeCartas.Models.Interfaces;
 using BaralhoDeCartas.Models.ViewModel;
+using BaralhoDeCartas.Models.DTOs;
+using BaralhoDeCartas.Factory.Interfaces;
+using BaralhoDeCartas.Factory;
 
 namespace BaralhoDeCartas.Controllers   
 {    
@@ -9,11 +12,13 @@ namespace BaralhoDeCartas.Controllers
     {
         private readonly IMaiorCartaService _maiorCartaService;
         private readonly IBlackjackService _blackjackService;
+        private readonly IJogadorFactory _jogadorFactory;
 
-        public JogoWebController(IMaiorCartaService jogoService, IBlackjackService blackjackService)
+        public JogoWebController(IMaiorCartaService jogoService, IBlackjackService blackjackService,IJogadorFactory jogadorFactory)
         {
             _maiorCartaService = jogoService;
             _blackjackService = blackjackService;
+            _jogadorFactory = jogadorFactory;
         }
 
         public async Task<IActionResult> Index(string jogo, int numeroJogadores)
@@ -88,7 +93,8 @@ namespace BaralhoDeCartas.Controllers
                                 valor = c.Valor,
                                 valorSimbolico = c.ValorSimbolico,
                                 naipe = c.Naipe,
-                                imagem = c.ImagemUrl
+                                imagem = c.ImagemUrl,
+                                codigo = c.Codigo
                             })
                         })
                     });
@@ -120,7 +126,8 @@ namespace BaralhoDeCartas.Controllers
                                         valor = c.Valor,
                                         valorSimbolico = c.ValorSimbolico,
                                         naipe = c.Naipe,
-                                        imagem = c.ImagemUrl
+                                        imagem = c.ImagemUrl,
+                                        codigo = c.Codigo
                                     })
                                 })
                             });
@@ -166,6 +173,37 @@ namespace BaralhoDeCartas.Controllers
         {
             await _maiorCartaService.FinalizarJogoAsync(baralhoId);
             return RedirectToAction("Index", "Jogos");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeterminarVencedor([FromBody] List<JogadorDTO> jogadoresDto)
+        {
+            try
+            {
+                List<IJogador> jogadores = new List<IJogador>();
+
+                foreach (var jogador in jogadoresDto)
+                {
+                    jogadores.Add(_jogadorFactory.CriarJogador(jogador));
+                }
+
+                IJogador vencedor = await _maiorCartaService.DeterminarVencedorAsync(jogadores);
+
+                return Json(new
+                {
+                    success = true,
+                    vencedor = new
+                    {
+                        id = vencedor.JogadorId,
+                        nome = vencedor.Nome,
+                        isComputador = vencedor.JogadorId == 1
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = ex.Message });
+            }
         }
     }
 }

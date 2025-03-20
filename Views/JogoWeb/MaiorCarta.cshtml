@@ -146,17 +146,17 @@
                 playButton.disabled = true;
                 playButton.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Processando...';
                 jogadaEmAndamento = true;
+                
+                try {
+                    const response = await fetch(`/JogoWeb/DistribuirCartas?baralhoId=${baralhoId}&numeroJogadores=${numeroJogadores}`, {
+                        method: 'GET'
+                    });
 
-				try {
-					const response = await fetch(`/JogoWeb/DistribuirCartas?baralhoId=${baralhoId}&numeroJogadores=${numeroJogadores}`, {
-						method: 'GET'
-					});
+                    const result = await response.json();
 
-					const result = await response.json();
-
-					if (!result.success) {
-						throw new Error(result.error || "Erro desconhecido ao distribuir cartas");
-					}
+                    if (!result.success) {
+                        throw new Error(result.error || "Erro desconhecido ao distribuir cartas");
+                    }
                     
                     // Se um novo baralho foi criado, atualize o ID do baralho
                     if (result.novoBaralho && result.baralhoId) {
@@ -164,86 +164,125 @@
                         console.log('Novo baralho criado:', baralhoId);
                     }
 
-					// Limpar áreas de cartas
-					computerCards.innerHTML = '';
-					for (let i = 1; i < numeroJogadores; i++) {
-						document.getElementById(`player-cards-${i}`).innerHTML = '';
-					}
+                    // Limpar áreas de cartas
+                    computerCards.innerHTML = '';
+                    for (let i = 1; i < numeroJogadores; i++) {
+                        const playerCardArea = document.getElementById(`player-cards-${i}`);
+                        if (playerCardArea) {
+                            playerCardArea.innerHTML = '';
+                        } else {
+                            console.warn(`Área de cartas para o jogador ${i} não encontrada`);
+                        }
+                    }
 
-					// Renderizar cartas para cada jogador
-					for (let i = 0; i < result.data.length; i++) {
-						const jogador = result.data[i];
-						const areaId = i === 0 ? 'computer-cards' : `player-cards-${i}`;
-						const jogadorArea = document.getElementById(areaId);
-						
-						for (const carta of jogador.cartas) {
-							try {
-								const cartaResponse = await fetch('/JogoWeb/RenderizarCarta', {
-									method: 'POST',
-									headers: {
-										'Content-Type': 'application/json'
-									},
-									body: JSON.stringify({
-										valor: carta.valor,
-										valorSimbolico: carta.valorSimbolico,
-										naipe: carta.naipe,
-										imagemUrl: carta.imagem
-									})
-								});
+                    // Renderizar cartas para cada jogador
+                    for (let i = 0; i < result.data.length; i++) {
+                        const jogador = result.data[i];
+                        const areaId = i === 0 ? 'computer-cards' : `player-cards-${i}`;
+                        const jogadorArea = document.getElementById(areaId);
+                        
+                        if (!jogadorArea) {
+                            console.error(`Área de cartas com id ${areaId} não encontrada`);
+                            continue; // Pula para o próximo jogador se a área não for encontrada
+                        }
+                        
+                        for (const carta of jogador.cartas) {
+                            try {
+                                const cartaResponse = await fetch('/JogoWeb/RenderizarCarta', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        valor: carta.valor,
+                                        valorSimbolico: carta.valorSimbolico,
+                                        naipe: carta.naipe,
+                                        imagemUrl: carta.imagem,
+                                        codigo: carta.codigo || carta.valorSimbolico + carta.naipe // Garantir que temos um código
+                                    })
+                                });
 
-								if (cartaResponse.ok) {
-									const cartaHtml = await cartaResponse.text();
-									jogadorArea.insertAdjacentHTML('beforeend', cartaHtml);
-								} else {
-									console.error(`Erro ao renderizar carta do jogador ${i}:`, await cartaResponse.text());
-								}
-							} catch (error) {
-								console.error(`Erro ao processar carta do jogador ${i}:`, error);
-							}
-						}
-					}
+                                if (cartaResponse.ok) {
+                                    const cartaHtml = await cartaResponse.text();
+                                    jogadorArea.insertAdjacentHTML('beforeend', cartaHtml);
+                                } else {
+                                    console.error(`Erro ao renderizar carta do jogador ${i}:`, await cartaResponse.text());
+                                }
+                            } catch (error) {
+                                console.error(`Erro ao processar carta do jogador ${i}:`, error);
+                            }
+                        }
+                    }
 
-					// Determinar vencedor baseado no valor mais alto de cada jogador
-					const valoresMaximos = result.data.map(jogador => 
-						Math.max(...jogador.cartas.map(c => c.valor))
-					);
-					
-					const valorMaximo = Math.max(...valoresMaximos);
-					const jogadoresComValorMaximo = valoresMaximos.map((v, idx) => 
-						v === valorMaximo ? idx : -1
-					).filter(idx => idx !== -1);
-					
-					// Lógica de vitória: se houver empate, o computador vence, caso contrário o jogador com maior valor vence
-					let vencedorIndex;
-					if (jogadoresComValorMaximo.includes(0)) {
-						// Computador está entre os que empataram com valor máximo
-						vencedorIndex = 0;
-						messageArea.className = 'alert alert-danger';
-						messageArea.textContent = jogadoresComValorMaximo.length > 1 
-							? 'Empate! Computador vence no desempate.' 
-							: 'Computador venceu esta rodada!';
-					} else {
-						// Jogador humano venceu
-						vencedorIndex = jogadoresComValorMaximo[0];
-						messageArea.className = 'alert alert-success';
-						messageArea.textContent = `Jogador ${vencedorIndex} venceu esta rodada!`;
-					}
-					
-					// Atualizar pontuações
-					const scoreName = vencedorIndex === 0 ? 'computer' : `player-${vencedorIndex}`;
-					scores[scoreName]++;
-					
-					if (vencedorIndex === 0) {
-						computerScore.textContent = scores[scoreName];
-					} else {
-						document.getElementById(`player-score-${vencedorIndex}`).textContent = scores[scoreName];
-					}
+                    // Determinar vencedor usando o backend (MaiorCartaService)
+                    const determinarVencedorResponse = await fetch('/JogoWeb/DeterminarVencedor', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(result.data.map(j => ({
+                            id: j.id,
+                            nome: j.nome,
+                            cartas: j.cartas.map(c => ({
+                                valor: c.valor,
+                                valorSimbolico: c.valorSimbolico,
+                                naipe: c.naipe,
+                                imagem: c.imagem,
+                                codigo: c.codigo || c.valorSimbolico + c.naipe // Gerar um código se não existir
+                            }))
+                        })))
+                    });
 
-				} catch (error) {
-					console.error('Erro:', error);
-					messageArea.className = 'alert alert-danger';
-					messageArea.textContent = 'Erro ao jogar a rodada. Tente novamente.';
-				} finally {
+                    const vencedorResult = await determinarVencedorResponse.json();
+                    
+                    if (!vencedorResult.success) {
+                        throw new Error(vencedorResult.error || "Erro ao determinar o vencedor");
+                    }
+                    
+                    const vencedor = vencedorResult.vencedor;
+                    const vencedorId = vencedor.id;
+                    const isComputador = vencedor.isComputador;
+                    
+                    // Log para depuração
+                    console.log("Vencedor:", vencedor);
+                    console.log("Vencedor ID:", vencedorId);
+                    console.log("É computador?", isComputador);
+                    
+                    // Atualizar UI com informações do vencedor
+                    if (isComputador) {
+                        messageArea.className = 'alert alert-danger';
+                        messageArea.textContent = 'Computador venceu esta rodada!';
+                        scores['computer']++;
+                        computerScore.textContent = scores['computer'];
+                    } else {
+                        messageArea.className = 'alert alert-success';
+                        messageArea.textContent = `${vencedor.nome} venceu esta rodada!`;
+                        
+                        // Correto: Usar o ID do jogador diretamente para encontrar o elemento score
+                        // Importante: Verificar o elemento HTML na página para garantir o ID correto
+                        const playerScoreId = `player-score-${vencedorId}`;
+                        console.log(`Procurando elemento de pontuação: #${playerScoreId}`);
+                        
+                        const playerScoreElement = document.getElementById(playerScoreId);
+                        if (playerScoreElement) {
+                            scores[`player-${vencedorId}`] = (scores[`player-${vencedorId}`] || 0) + 1;
+                            playerScoreElement.textContent = scores[`player-${vencedorId}`];
+                            console.log(`Pontuação atualizada para jogador ${vencedorId}: ${scores[`player-${vencedorId}`]}`);
+                        } else {
+                            console.error(`Elemento com id ${playerScoreId} não encontrado`);
+                            // Tentar outra estratégia: verificar todos os elementos de pontuação disponíveis
+                            console.log("Elementos de pontuação disponíveis:");
+                            document.querySelectorAll('[id^="player-score-"]').forEach(el => {
+                                console.log(`Encontrado: ${el.id}`);
+                            });
+                        }
+                    }
+
+                } catch (error) {
+                    console.error('Erro:', error);
+                    messageArea.className = 'alert alert-danger';
+                    messageArea.textContent = 'Erro ao jogar a rodada. Tente novamente.';
+                } finally {
                     // Sempre reabilitar o botão após a conclusão, independentemente de sucesso ou erro
                     playButton.disabled = false;
                     playButton.innerHTML = '<i class="bi bi-play-circle me-2"></i>Jogar';

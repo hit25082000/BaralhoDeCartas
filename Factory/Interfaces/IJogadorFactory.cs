@@ -1,4 +1,5 @@
 ﻿using BaralhoDeCartas.Models.ApiResponses;
+using BaralhoDeCartas.Models.DTOs;
 using BaralhoDeCartas.Models.Interfaces;
 
 namespace BaralhoDeCartas.Factory.Interfaces
@@ -7,5 +8,6 @@ namespace BaralhoDeCartas.Factory.Interfaces
     {
         IJogadorDeBlackjack CriarJogadorDeBlackJack(List<ICarta> cartas, int jogadorId, string nomeJogador);
         IJogador CriarJogador(List<ICarta> cartas, int jogadorId, string nomeJogador);
+        IJogador CriarJogador(JogadorDTO jogadorDto);
     }
 }
