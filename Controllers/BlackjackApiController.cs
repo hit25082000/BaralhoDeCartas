@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using BaralhoDeCartas.Models.Interfaces;
 using BaralhoDeCartas.Services.Interfaces;
+using BaralhoDeCartas.Models.DTOs;
 
 namespace BaralhoDeCartas.Controllers
 {
@@ -8,19 +9,19 @@ namespace BaralhoDeCartas.Controllers
     [Route("api/[controller]")]
     public class BlackjackApiController : ControllerBase
     {
-        private readonly IBlackjackService _blackjackService;
+        private readonly IBlackjackService _jogoService;
 
-        public BlackjackApiController(IBlackjackService blackjackService)
+        public BlackjackApiController(IBlackjackService jogoService)
         {
-            _blackjackService = blackjackService;
+            _jogoService = jogoService;
         }
 
-        [HttpPost("iniciar")]
+        [HttpGet("iniciar")]
         public async Task<ActionResult<IBaralho>> IniciarJogo()
         {
             try
             {
-                var baralho = await _blackjackService.IniciarJogo();
+                var baralho = await _jogoService.IniciarJogo();
                 return Ok(baralho);
             }
             catch (Exception ex)
@@ -30,7 +31,7 @@ namespace BaralhoDeCartas.Controllers
         }
 
         [HttpPost("{baralhoId}/iniciar-rodada/{numeroJogadores}")]
-        public async Task<ActionResult<List<IJogadorDeBlackjack>>> IniciarRodada(string baralhoId, int numeroJogadores)
+        public async Task<ActionResult<List<JogadorBlackjackDTO>>> IniciarRodada(string baralhoId, int numeroJogadores)
         {
             try
             {
@@ -39,8 +40,9 @@ namespace BaralhoDeCartas.Controllers
                     return BadRequest("O número de jogadores deve ser maior que zero.");
                 }
 
-                var jogadores = await _blackjackService.IniciarRodada(baralhoId, numeroJogadores);
-                return Ok(jogadores);
+                var jogadores = await _jogoService.IniciarRodada(baralhoId, numeroJogadores);
+                var jogadoresDTO = JogadorBlackjackDTO.FromJogadores(jogadores);
+                return Ok(jogadoresDTO);
             }
             catch (Exception ex)
             {
@@ -48,14 +50,16 @@ namespace BaralhoDeCartas.Controllers
             }
         }
 
-        [HttpPost("{baralhoId}/jogador/comprar")]
-        public async Task<ActionResult<ICarta>> ComprarCarta(string baralhoId, [FromBody] IJogadorDeBlackjack jogador)
+        [HttpPost("{baralhoId}/comprar-carta")]
+        public async Task<ActionResult<CartaDTO>> ComprarCarta(string baralhoId, [FromBody] JogadorBlackjackDTO jogadorDTO)
         {
             try
             {
-                var novaCarta = await _blackjackService.ComprarCarta(baralhoId, jogador);
+                var jogadores = JogadorBlackjackDTO.ToJogadores(new List<JogadorBlackjackDTO> { jogadorDTO });
+                var jogador = jogadores.First();
 
-                return Ok(novaCarta);
+                var novaCarta = await _jogoService.ComprarCarta(baralhoId, jogador);
+                return Ok(new CartaDTO(novaCarta));
             }
             catch (InvalidOperationException ex)
             {
@@ -67,18 +71,16 @@ namespace BaralhoDeCartas.Controllers
             }
         }
 
-        [HttpPost("{baralhoId}/jogador/{jogadorId}/parar")]
-        public ActionResult<IJogadorDeBlackjack> PararJogador(int jogadorId, [FromBody] IJogadorDeBlackjack jogador)
+        [HttpPost("parar")]
+        public ActionResult<JogadorBlackjackDTO> PararJogador([FromBody] JogadorBlackjackDTO jogadorDTO)
         {
             try
             {
-                if (jogador.JogadorId != jogadorId)
-                {
-                    return BadRequest("ID do jogador inválido.");
-                }
-
+                var jogadores = JogadorBlackjackDTO.ToJogadores(new List<JogadorBlackjackDTO> { jogadorDTO });
+                var jogador = jogadores.First();
                 jogador.Parou = true;
-                return Ok(jogador);
+
+                return Ok(new JogadorBlackjackDTO(jogador));
             }
             catch (Exception ex)
             {
@@ -87,18 +89,21 @@ namespace BaralhoDeCartas.Controllers
         }
 
         [HttpPost("{baralhoId}/finalizar")]
-        public async Task<ActionResult<List<IJogadorDeBlackjack>>> FinalizarRodada(string baralhoId, [FromBody] List<IJogadorDeBlackjack> jogadores)
+        public async Task<ActionResult<ResultadoRodadaBlackjackDTO>> FinalizarRodada(string baralhoId, [FromBody] List<JogadorBlackjackDTO> jogadoresDTO)
         {
             try
             {
-                var vencedores = _blackjackService.DeterminarVencedores(jogadores);
-                await _blackjackService.FinalizarJogo(baralhoId);
+                var jogadores = JogadorBlackjackDTO.ToJogadores(jogadoresDTO);
+                var vencedores = _jogoService.DeterminarVencedores(jogadores);
+                await _jogoService.FinalizarJogo(baralhoId);
 
-                return Ok(new
+                var resultado = new ResultadoRodadaBlackjackDTO
                 {
-                    Vencedores = vencedores,
-                    JogadoresFinais = jogadores
-                });
+                    Vencedores = JogadorBlackjackDTO.FromJogadores(vencedores),
+                    JogadoresFinais = jogadoresDTO
+                };
+
+                return Ok(resultado);
             }
             catch (Exception ex)
             {

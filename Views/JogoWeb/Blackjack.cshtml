@@ -28,7 +28,9 @@
     <script>
         async function iniciarRodada() {
             try {
-                const response = await fetch(`/JogoWeb/IniciarRodada?baralhoId=@Model.BaralhoId&numeroJogadores=2`);
+                const response = await fetch(`/api/BlackjackApi/@Model.BaralhoId/iniciar-rodada/2`, {
+                    method: 'POST'
+                });
                 const jogadores = await response.json();
                 
                 const areaJogadores = document.getElementById('area-jogadores');
@@ -37,23 +39,31 @@
                 jogadores.forEach(jogador => {
                     const jogadorElement = document.createElement('div');
                     jogadorElement.className = 'jogador-card';
+                    jogadorElement.dataset.jogadorId = jogador.jogadorId;
                     jogadorElement.innerHTML = `
                         <h3>${jogador.nome}</h3>
                         <div class="cartas-jogador">
                             ${jogador.cartas.map(carta => `
                                 <div class="carta">
-                                    <div class="carta-valor">${carta.valor}</div>
+                                    <div class="carta-valor">${carta.valorSimbolico}</div>
                                     <div class="carta-naipe">${carta.naipe}</div>
                                 </div>
                             `).join('')}
                         </div>
+                        <div class="info-jogador">
+                            <p>Pontuação: ${jogador.pontuacao}</p>
+                            ${jogador.temBlackjack ? '<p class="blackjack">Blackjack!</p>' : ''}
+                            ${jogador.estourou ? '<p class="estourou">Estourou!</p>' : ''}
+                        </div>
                         <div class="acoes-jogador">
-                            <button class="btn btn-success" onclick="comprarCarta('${jogador.jogadorId}')">
-                                Comprar Carta
-                            </button>
-                            <button class="btn btn-danger" onclick="parar('${jogador.jogadorId}')">
-                                Parar
-                            </button>
+                            ${!jogador.parou && !jogador.estourou ? `
+                                <button class="btn btn-success" onclick="comprarCarta(${jogador.jogadorId})">
+                                    Comprar Carta
+                                </button>
+                                <button class="btn btn-danger" onclick="pararJogador(${jogador.jogadorId})">
+                                    Parar
+                                </button>
+                            ` : ''}
                         </div>
                     `;
                     areaJogadores.appendChild(jogadorElement);
@@ -65,29 +75,151 @@
 
         async function comprarCarta(jogadorId) {
             try {
-                const response = await fetch(`/JogoWeb/ComprarCarta?baralhoId=@Model.BaralhoId&jogadorId=${jogadorId}`);
-                const carta = await response.json();
-                
-                // Atualizar a interface com a nova carta
                 const jogadorElement = document.querySelector(`[data-jogador-id="${jogadorId}"]`);
-                const cartasJogador = jogadorElement.querySelector('.cartas-jogador');
+                const jogador = {
+                    jogadorId: jogadorId,
+                    nome: jogadorElement.querySelector('h3').textContent,
+                    cartas: Array.from(jogadorElement.querySelectorAll('.carta')).map(cartaElement => ({
+                        codigo: cartaElement.dataset.codigo,
+                        valorSimbolico: cartaElement.querySelector('.carta-valor').textContent,
+                        naipe: cartaElement.querySelector('.carta-naipe').textContent
+                    }))
+                };
+
+                const response = await fetch(`/api/BlackjackApi/@Model.BaralhoId/comprar-carta`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(jogador)
+                });
+
+                const novaCarta = await response.json();
                 
+                const cartasJogador = jogadorElement.querySelector('.cartas-jogador');
                 const cartaElement = document.createElement('div');
                 cartaElement.className = 'carta';
+                cartaElement.dataset.codigo = novaCarta.codigo;
                 cartaElement.innerHTML = `
-                    <div class="carta-valor">${carta.valor}</div>
-                    <div class="carta-naipe">${carta.naipe}</div>
+                    <div class="carta-valor">${novaCarta.valorSimbolico}</div>
+                    <div class="carta-naipe">${novaCarta.naipe}</div>
                 `;
-                
                 cartasJogador.appendChild(cartaElement);
+
+                // Atualizar o estado do jogador
+                const jogadorAtualizado = await atualizarEstadoJogador(jogadorId);
+                atualizarInterfaceJogador(jogadorElement, jogadorAtualizado);
             } catch (error) {
                 console.error('Erro ao comprar carta:', error);
             }
         }
 
-        async function parar(jogadorId) {
-            // Implementar lógica para parar
-            console.log(`Jogador ${jogadorId} parou`);
+        async function pararJogador(jogadorId) {
+            try {
+                const jogadorElement = document.querySelector(`[data-jogador-id="${jogadorId}"]`);
+                const jogador = {
+                    jogadorId: jogadorId,
+                    nome: jogadorElement.querySelector('h3').textContent,
+                    cartas: Array.from(jogadorElement.querySelectorAll('.carta')).map(cartaElement => ({
+                        codigo: cartaElement.dataset.codigo,
+                        valorSimbolico: cartaElement.querySelector('.carta-valor').textContent,
+                        naipe: cartaElement.querySelector('.carta-naipe').textContent
+                    }))
+                };
+
+                const response = await fetch(`/api/BlackjackApi/parar`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(jogador)
+                });
+
+                const jogadorAtualizado = await response.json();
+                atualizarInterfaceJogador(jogadorElement, jogadorAtualizado);
+
+                // Verificar se todos os jogadores pararam
+                const todosPararam = Array.from(document.querySelectorAll('.jogador-card'))
+                    .every(j => j.querySelector('.acoes-jogador').children.length === 0);
+
+                if (todosPararam) {
+                    await finalizarRodada();
+                }
+            } catch (error) {
+                console.error('Erro ao parar jogador:', error);
+            }
+        }
+
+        async function finalizarRodada() {
+            try {
+                const jogadores = Array.from(document.querySelectorAll('.jogador-card')).map(jogadorElement => ({
+                    jogadorId: parseInt(jogadorElement.dataset.jogadorId),
+                    nome: jogadorElement.querySelector('h3').textContent,
+                    cartas: Array.from(jogadorElement.querySelectorAll('.carta')).map(cartaElement => ({
+                        codigo: cartaElement.dataset.codigo,
+                        valorSimbolico: cartaElement.querySelector('.carta-valor').textContent,
+                        naipe: cartaElement.querySelector('.carta-naipe').textContent
+                    }))
+                }));
+
+                const response = await fetch(`/api/BlackjackApi/@Model.BaralhoId/finalizar`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(jogadores)
+                });
+
+                const resultado = await response.json();
+                
+                // Destacar os vencedores
+                resultado.vencedores.forEach(vencedor => {
+                    const jogadorElement = document.querySelector(`[data-jogador-id="${vencedor.jogadorId}"]`);
+                    if (jogadorElement) {
+                        jogadorElement.classList.add('vencedor');
+                        jogadorElement.querySelector('h3').textContent += ' (Vencedor!)';
+                    }
+                });
+            } catch (error) {
+                console.error('Erro ao finalizar rodada:', error);
+            }
+        }
+
+        async function atualizarEstadoJogador(jogadorId) {
+            const jogadorElement = document.querySelector(`[data-jogador-id="${jogadorId}"]`);
+            const jogador = {
+                jogadorId: jogadorId,
+                nome: jogadorElement.querySelector('h3').textContent,
+                cartas: Array.from(jogadorElement.querySelectorAll('.carta')).map(cartaElement => ({
+                    codigo: cartaElement.dataset.codigo,
+                    valorSimbolico: cartaElement.querySelector('.carta-valor').textContent,
+                    naipe: cartaElement.querySelector('.carta-naipe').textContent
+                }))
+            };
+
+            const response = await fetch(`/api/BlackjackApi/estado-jogador`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jogador)
+            });
+
+            return await response.json();
+        }
+
+        function atualizarInterfaceJogador(jogadorElement, jogador) {
+            const infoJogador = jogadorElement.querySelector('.info-jogador');
+            infoJogador.innerHTML = `
+                <p>Pontuação: ${jogador.pontuacao}</p>
+                ${jogador.temBlackjack ? '<p class="blackjack">Blackjack!</p>' : ''}
+                ${jogador.estourou ? '<p class="estourou">Estourou!</p>' : ''}
+            `;
+
+            const acoesJogador = jogadorElement.querySelector('.acoes-jogador');
+            if (jogador.parou || jogador.estourou) {
+                acoesJogador.innerHTML = '';
+            }
         }
     </script>
 } 

@@ -5,7 +5,7 @@ namespace BaralhoDeCartas.Factory.Interfaces
 {
     public interface IJogadorFactory
     {
-        IJogadorDeBlackjack CriarJogadorDeBlackJack(List<ICarta> cartas, int cartasIniciaisPorJogador, int indice);
-        IJogador CriarJogador(List<ICarta> cartas, int cartasIniciaisPorJogador, int indice);
+        IJogadorDeBlackjack CriarJogadorDeBlackJack(List<ICarta> cartas, int jogadorId, string nomeJogador);
+        IJogador CriarJogador(List<ICarta> cartas, int jogadorId, string nomeJogador);
     }
 }

@@ -7,19 +7,13 @@ namespace BaralhoDeCartas.Factory
 {
     public class JogadorFactory : IJogadorFactory
     {
-        public IJogador CriarJogador(List<ICarta> cartas, int cartasIniciaisPorJogador, int indice)
+        public IJogador CriarJogador(List<ICarta> cartas, int jogadorId, string nomeJogador)
         {
-            int jogadorId = indice + 1;
-            string nomeJogador = $"Jogador {indice + 1}";
-
             return new Jogador(cartas, jogadorId, nomeJogador);
         }
 
-        public IJogadorDeBlackjack CriarJogadorDeBlackJack(List<ICarta> cartas, int cartasIniciaisPorJogador,int indice)
-        {
-            int jogadorId = indice + 1;
-            string nomeJogador = $"Jogador {indice + 1}";
-
+        public IJogadorDeBlackjack CriarJogadorDeBlackJack(List<ICarta> cartas, int jogadorId, string nomeJogador)
+        {     
             return new JogadorDeBlackjack(cartas, jogadorId, nomeJogador);
         }
     }

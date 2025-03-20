@@ -36,7 +36,10 @@ namespace BaralhoDeCartas.Services
             {
                 List<ICarta> cartasDoJogador = todasAsCartas.Skip(i * CARTAS_POR_JOGADOR).Take(CARTAS_POR_JOGADOR).ToList();
 
-                IJogador jogador = _jogadorFactory.CriarJogador(cartasDoJogador, CARTAS_POR_JOGADOR, i);               
+                int jogadorId = i + 1;
+                string nomeJogador = $"Jogador {jogadorId}";
+
+                IJogador jogador = _jogadorFactory.CriarJogador(cartasDoJogador,jogadorId,nomeJogador);               
                 jogadores.Add(jogador);
             }
 

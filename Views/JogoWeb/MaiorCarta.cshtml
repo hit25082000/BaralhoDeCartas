@@ -28,7 +28,9 @@
     <script>
         async function distribuirCartas() {
             try {
-                const response = await fetch(`/JogoWeb/DistribuirCartas?baralhoId=@Model.BaralhoId&numeroJogadores=2`);
+                const response = await fetch(`/api/MaiorCartaApi/@Model.BaralhoId/distribuir/2`, {
+                    method: 'POST'
+                });
                 const jogadores = await response.json();
                 
                 const areaJogadores = document.getElementById('area-jogadores');
@@ -42,7 +44,7 @@
                         <div class="cartas-jogador">
                             ${jogador.cartas.map(carta => `
                                 <div class="carta">
-                                    <div class="carta-valor">${carta.valor}</div>
+                                    <div class="carta-valor">${carta.valorSimbolico}</div>
                                     <div class="carta-naipe">${carta.naipe}</div>
                                 </div>
                             `).join('')}
@@ -50,6 +52,23 @@
                     `;
                     areaJogadores.appendChild(jogadorElement);
                 });
+
+                // Determinar o vencedor
+                const vencedorResponse = await fetch('/api/MaiorCartaApi/vencedor', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(jogadores)
+                });
+                const vencedor = await vencedorResponse.json();
+
+                // Destacar o vencedor
+                const jogadorVencedor = document.querySelector(`[data-jogador-id="${vencedor.jogadorId}"]`);
+                if (jogadorVencedor) {
+                    jogadorVencedor.classList.add('vencedor');
+                    jogadorVencedor.querySelector('h3').textContent += ' (Vencedor!)';
+                }
             } catch (error) {
                 console.error('Erro ao distribuir cartas:', error);
             }

@@ -1,5 +1,6 @@
 using BaralhoDeCartas.Api.Interfaces;
 using BaralhoDeCartas.Factory.Interfaces;
+using BaralhoDeCartas.Models;
 using BaralhoDeCartas.Models.Interfaces;
 using BaralhoDeCartas.Services.Interfaces;
 
@@ -24,14 +25,21 @@ namespace BaralhoDeCartas.Services
 
         public async Task<List<IJogadorDeBlackjack>> IniciarRodada(string baralhoId, int numeroJogadores)
         {
-            var jogadores = new List<IJogadorDeBlackjack>();
-            var totalCartas = numeroJogadores * CartasIniciaisPorJogador;
+            List<IJogadorDeBlackjack> jogadores = new List<IJogadorDeBlackjack>();
+            int totalCartas = numeroJogadores * CartasIniciaisPorJogador;
 
-            var todasAsCartas = await _baralhoApiClient.ComprarCartas(baralhoId, totalCartas);
+            List<ICarta> todasAsCartas = await _baralhoApiClient.ComprarCartas(baralhoId, totalCartas);
             
             for (int i = 0; i < numeroJogadores; i++)
             {
-                IJogadorDeBlackjack jogador = _jogadorFactory.CriarJogadorDeBlackJack(todasAsCartas, CartasIniciaisPorJogador,i);
+                List<ICarta> cartasDoJogador = todasAsCartas.Skip(i * CartasIniciaisPorJogador)
+                          .Take(CartasIniciaisPorJogador)
+                          .ToList();
+
+                int jogadorId = i + 1;
+                string nomeJogador = $"Jogador {jogadorId}";
+
+                IJogadorDeBlackjack jogador = _jogadorFactory.CriarJogadorDeBlackJack(cartasDoJogador, jogadorId, nomeJogador);
                 jogadores.Add(jogador);
             }
 

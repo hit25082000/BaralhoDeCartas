@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using BaralhoDeCartas.Models.Interfaces;
 using BaralhoDeCartas.Services.Interfaces;
+using BaralhoDeCartas.Models.DTOs;
 
 namespace BaralhoDeCartas.Controllers
 {
@@ -30,7 +31,7 @@ namespace BaralhoDeCartas.Controllers
         }
 
         [HttpPost("{baralhoId}/distribuir/{numeroJogadores}")]
-        public async Task<ActionResult<List<IJogador>>> DistribuirCartas(string baralhoId, int numeroJogadores)
+        public async Task<ActionResult<List<JogadorDTO>>> DistribuirCartas(string baralhoId, int numeroJogadores)
         {
             try
             {
@@ -40,7 +41,8 @@ namespace BaralhoDeCartas.Controllers
                 }
 
                 var jogadores = await _jogoService.DistribuirCartas(baralhoId, numeroJogadores);
-                return Ok(jogadores);
+                var jogadoresDTO = JogadorDTO.FromJogadores(jogadores);
+                return Ok(jogadoresDTO);
             }
             catch (Exception ex)
             {
@@ -49,17 +51,18 @@ namespace BaralhoDeCartas.Controllers
         }
 
         [HttpPost("/vencedor")]
-        public async Task<ActionResult<IJogador>> ObterVencedor([FromBody] List<IJogador> jogadores)
+        public async Task<ActionResult<JogadorDTO>> ObterVencedor([FromBody] List<JogadorDTO> jogadoresDTO)
         {
             try
             {
-                if (jogadores == null || jogadores.Count == 0)
+                if (jogadoresDTO == null || jogadoresDTO.Count == 0)
                 {
                     return BadRequest(new { erro = "A lista de jogadores não pode estar vazia." });
                 }
 
+                var jogadores = JogadorDTO.ToJogadores(jogadoresDTO);
                 var vencedor = await _jogoService.DeterminarVencedor(jogadores);
-                return Ok(vencedor);
+                return Ok(new JogadorDTO(vencedor));
             }
             catch (Exception ex)
             {
