@@ -9,6 +9,6 @@ namespace BaralhoDeCartas.Models.Interfaces
         List<ICarta> Cartas { get; }
 
         void AdicionarCarta(ICarta carta);
-        ICarta ObterCartaMaisAlta();
+        ICarta ObterCartaDeMaiorValor();
     }
 }

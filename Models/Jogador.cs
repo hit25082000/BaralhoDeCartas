@@ -22,7 +22,7 @@ namespace BaralhoDeCartas.Models
             Cartas.Add(carta);
         }
 
-        public ICarta ObterCartaMaisAlta()
+        public ICarta ObterCartaDeMaiorValor()
         {
             return Cartas.OrderByDescending(c => c.Valor).FirstOrDefault();
         }

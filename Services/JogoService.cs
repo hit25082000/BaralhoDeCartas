@@ -46,7 +46,7 @@ namespace BaralhoDeCartas.Services
         public async Task<IJogador> DeterminarVencedor(List<IJogador> jogadores)
         {
             return jogadores
-                .OrderByDescending(j => j.ObterCartaMaisAlta()?.Valor ?? 0)
+                .OrderByDescending(j => j.ObterCartaDeMaiorValor()?.Valor ?? 0)
                 .FirstOrDefault();
         }
 
