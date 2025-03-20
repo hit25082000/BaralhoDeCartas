@@ -15,7 +15,7 @@ namespace BaralhoDeCartas.Controllers
             _jogoService = jogoService;
         }
 
-        [HttpPost("iniciar")]
+        [HttpGet("iniciar")]
         public async Task<ActionResult<IBaralho>> IniciarJogo()
         {
             try

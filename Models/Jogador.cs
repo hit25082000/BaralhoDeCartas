@@ -6,11 +6,11 @@ namespace BaralhoDeCartas.Models
 {
     public class Jogador : IJogador
     {
-        public Jogador(int jogadorId, string nome)
+        public Jogador(List<ICarta> cartas,int jogadorId, string nome)
         {
             JogadorId = jogadorId;
             Nome = nome;
-            Cartas = new List<ICarta>();
+            Cartas = cartas ?? new List<ICarta>();
         }
 
         public int JogadorId { get; }

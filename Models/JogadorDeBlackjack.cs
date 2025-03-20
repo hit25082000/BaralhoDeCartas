@@ -6,8 +6,8 @@ namespace BaralhoDeCartas.Models
 {
     public class JogadorDeBlackjack : Jogador, IJogadorDeBlackjack
     {
-        public JogadorDeBlackjack(int jogadorId, string nome)
-            : base(jogadorId, nome)
+        public JogadorDeBlackjack(List<ICarta> cartas, int jogadorId, string nome)
+            : base(cartas, jogadorId, nome)
         {
             Parou = false;
         }

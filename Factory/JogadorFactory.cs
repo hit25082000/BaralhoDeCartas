@@ -17,6 +17,9 @@ namespace BaralhoDeCartas.Factory
 
         public IJogadorDeBlackjack CriarJogadorDeBlackJack(List<ICarta> cartas, int cartasIniciaisPorJogador,int indice)
         {
+            int jogadorId = indice + 1;
+            string nomeJogador = $"Jogador {indice + 1}";
+
             return new JogadorDeBlackjack(cartas, jogadorId, nomeJogador);
         }
     }
