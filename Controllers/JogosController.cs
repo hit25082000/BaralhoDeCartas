@@ -18,9 +18,15 @@ namespace BaralhoDeCartas.Controllers
             return View();
         }
 
-        public async Task<IActionResult> Blackjack()
+        public async Task<IActionResult> Blackjack(int numeroJogadores = 2)
         {
-            var jogo = await _blackjackService.CriarJogoBlackJackAsync(2);
+            // Validação do número de jogadores
+            if (numeroJogadores < 2 || numeroJogadores > 5)
+            {
+                return RedirectToAction("Index");
+            }
+
+            var jogo = await _blackjackService.CriarJogoBlackJackAsync(numeroJogadores);
             return View(jogo);
         }
     }
