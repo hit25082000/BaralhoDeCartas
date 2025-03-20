@@ -18,6 +18,18 @@ namespace BaralhoDeCartas.Controllers
 
         public async Task<IActionResult> Index(string jogo, int numeroJogadores)
         {
+            // Garantir que haja pelo menos 2 jogadores (computador + 1 humano)
+            if (numeroJogadores < 2)
+            {
+                numeroJogadores = 2;
+            }
+            
+            // Limitar o número máximo de jogadores para 6 para garantir boa experiência de usuário
+            if (numeroJogadores > 6)
+            {
+                numeroJogadores = 6;
+            }
+
             if (string.IsNullOrEmpty(jogo))
             {
                 return RedirectToAction("Index", "Jogos");

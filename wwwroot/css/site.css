@@ -13,6 +13,18 @@ html {
     font-size: 14px;
 }
 
+@media (max-width: 767px) {
+    .cartas-jogador {
+        justify-content: center;
+    }
+
+    .playing-card {
+        width: 90px;
+        height: 135px;
+        margin: 3px;
+    }
+}
+
 @media (min-width: 768px) {
     html {
         font-size: 16px;

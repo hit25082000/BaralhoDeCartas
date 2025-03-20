@@ -16,10 +16,10 @@
                 <div class="card-body">
                     <h5 class="card-title text-center mb-3">Configuração do Jogo</h5>
                     <div class="form-group">
-                        <label for="numeroJogadores" class="form-label">Número de Jogadores (2-5):</label>
-                        <input type="number" class="form-control" id="numeroJogadores" min="2" max="5" value="2">
+                        <label for="numeroJogadores" class="form-label">Número de Jogadores (2-6):</label>
+                        <input type="number" class="form-control" id="numeroJogadores" min="2" max="6" value="2">
                         <div class="invalid-feedback">
-                            O número de jogadores deve estar entre 2 e 5.
+                            O número de jogadores deve estar entre 2 e 6.
                         </div>
                     </div>
                 </div>
@@ -246,7 +246,7 @@
             const numeroJogadoresInput = document.getElementById('numeroJogadores');
             numeroJogadoresInput.addEventListener('input', function() {
                 const value = parseInt(this.value);
-                const isValid = value >= 2 && value <= 5;
+                const isValid = value >= 2 && value <= 6;
                 
                 if (!isValid) {
                     this.classList.add('is-invalid');
@@ -260,8 +260,8 @@
             const numeroJogadores = document.getElementById('numeroJogadores').value;
             const numeroJogadoresInt = parseInt(numeroJogadores);
 
-            if (numeroJogadoresInt < 2 || numeroJogadoresInt > 5) {
-                alert('Por favor, selecione um número válido de jogadores (2-5)');
+            if (numeroJogadoresInt < 2 || numeroJogadoresInt > 6) {
+                alert('Por favor, selecione um número válido de jogadores (2-6)');
                 return;
             }
 
