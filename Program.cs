@@ -19,7 +19,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddHttpClient<IBaralhoApiClient, BaralhoApiClient>();
 
 // Registrar serviços
-builder.Services.AddScoped<IJogoService, JogoService>();
+builder.Services.AddScoped<IMaiorCartaService, MaiorCartaService>();
 builder.Services.AddScoped<IBlackjackService, BlackjackService>();
 builder.Services.AddScoped<IJogadorFactory, JogadorFactory>();
 builder.Services.AddScoped<ICartaFactory, CartaFactory>();

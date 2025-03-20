@@ -6,10 +6,10 @@ namespace BaralhoDeCartas.Controllers
 {    
     public class JogoWebController : Controller
     {
-        private readonly IJogoService _jogoService;
+        private readonly IMaiorCartaService _jogoService;
         private readonly IBlackjackService _blackjackService;
 
-        public JogoWebController(IJogoService jogoService, IBlackjackService blackjackService)
+        public JogoWebController(IMaiorCartaService jogoService, IBlackjackService blackjackService)
         {
             _jogoService = jogoService;
             _blackjackService = blackjackService;

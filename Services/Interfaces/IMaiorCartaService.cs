@@ -2,7 +2,7 @@ using BaralhoDeCartas.Models.Interfaces;
 
 namespace BaralhoDeCartas.Services.Interfaces
 {
-    public interface IJogoService
+    public interface IMaiorCartaService
     {
         Task<IBaralho> IniciarNovoJogo();
         Task<List<IJogador>> DistribuirCartas(string baralhoId, int numeroJogadores);

@@ -5,13 +5,13 @@ using BaralhoDeCartas.Services.Interfaces;
 
 namespace BaralhoDeCartas.Services
 {
-    public class JogoService : IJogoService
+    public class MaiorCartaService : IMaiorCartaService
     {
         private readonly IBaralhoApiClient _baralhoApiClient;
         private readonly IJogadorFactory _jogadorFactory;
         private const int CARTAS_POR_JOGADOR = 5;
 
-        public JogoService(IBaralhoApiClient baralhoApiClient, IJogadorFactory jogadorFactory)
+        public MaiorCartaService(IBaralhoApiClient baralhoApiClient, IJogadorFactory jogadorFactory)
         {
             _baralhoApiClient = baralhoApiClient;
             _jogadorFactory = jogadorFactory;

@@ -6,11 +6,11 @@ namespace BaralhoDeCartas.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class JogoApiController : ControllerBase
+    public class MaiorCartaApiController : ControllerBase
     {
-        private readonly IJogoService _jogoService;
+        private readonly IMaiorCartaService _jogoService;
 
-        public JogoApiController(IJogoService jogoService)
+        public MaiorCartaApiController(IMaiorCartaService jogoService)
         {
             _jogoService = jogoService;
         }
