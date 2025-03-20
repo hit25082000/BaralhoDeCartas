@@ -9,7 +9,7 @@ namespace BaralhoDeCartas.Factory
     {
         public IBaralho CriarBaralho(BaralhoResponse response)
         {
-            return new Baralho(response.Deck_id)
+            return new Baralho(response.DeckId)
             {
                 EstaEmbaralhado = response.Shuffled,
                 QuantidadeDeCartasRestantes = response.Remaining

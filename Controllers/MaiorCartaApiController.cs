@@ -29,8 +29,8 @@ namespace BaralhoDeCartas.Controllers
             }
         }
 
-        [HttpPost("{baralhoId}/distribuir")]
-        public async Task<ActionResult<List<IJogador>>> DistribuirCartas(string baralhoId, [FromQuery] int numeroJogadores)
+        [HttpPost("{baralhoId}/distribuir/{numeroJogadores}")]
+        public async Task<ActionResult<List<IJogador>>> DistribuirCartas(string baralhoId, int numeroJogadores)
         {
             try
             {
@@ -48,7 +48,7 @@ namespace BaralhoDeCartas.Controllers
             }
         }
 
-        [HttpGet("/vencedor")]
+        [HttpPost("/vencedor")]
         public async Task<ActionResult<IJogador>> ObterVencedor([FromBody] List<IJogador> jogadores)
         {
             try

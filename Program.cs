@@ -4,7 +4,6 @@ using BaralhoDeCartas.Factory;
 using BaralhoDeCartas.Factory.Interfaces;
 using BaralhoDeCartas.Services;
 using BaralhoDeCartas.Services.Interfaces;
-using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -55,10 +54,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
-// Usar CORS antes do mapeamento das rotas
 app.UseCors("AllowScalar");
 
-// Garantir que o Scalar e OpenAPI usem HTTPS
 app.MapScalarApiReference();
 app.MapOpenApi();
 
