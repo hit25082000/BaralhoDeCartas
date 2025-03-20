@@ -4,8 +4,8 @@ using BaralhoDeCartas.Factory;
 using BaralhoDeCartas.Factory.Interfaces;
 using BaralhoDeCartas.Services;
 using BaralhoDeCartas.Services.Interfaces;
+using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,10 +15,27 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
+// Adicionar configuração de CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowScalar", policy =>
+    {
+        policy.WithOrigins("https://localhost:*")
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
+// Configurar Scalar para forçar HTTPS
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.WriteIndented = true;
+});
+
 // Configurar HttpClient
 builder.Services.AddHttpClient<IBaralhoApiClient, BaralhoApiClient>();
 
-// Registrar servi�os
+// Registrar serviços
 builder.Services.AddScoped<IMaiorCartaService, MaiorCartaService>();
 builder.Services.AddScoped<IBlackjackService, BlackjackService>();
 builder.Services.AddScoped<IJogadorFactory, JogadorFactory>();
@@ -33,12 +50,18 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
-
-    app.MapScalarApiReference();
-    app.MapOpenApi();
+    
+    // UseHttpsRedirection apenas em produção
+    app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
+// Usar CORS antes do mapeamento das rotas
+app.UseCors("AllowScalar");
+
+// Garantir que o Scalar e OpenAPI usem HTTPS
+app.MapScalarApiReference();
+app.MapOpenApi();
+
 app.UseStaticFiles();
 
 app.UseRouting();
