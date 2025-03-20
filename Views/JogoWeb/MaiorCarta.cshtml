@@ -25,7 +25,15 @@
                             <div class="col-md-6">
                                 <div id="computer-area" class="text-center mb-4">
                                     <h3>Computador</h3>
-                                    <div id="computer-cards" class="cartas-jogador"></div>
+                                    <div id="computer-cards" class="cartas-jogador">
+                                        @if (Model.Jogadores[0].Cartas != null && Model.Jogadores[0].Cartas.Any())
+                                        {
+                                            foreach (var carta in Model.Jogadores[0].Cartas)
+                                            {
+                                                <partial name="_CartaPartial" model="carta" />
+                                            }
+                                        }
+                                    </div>
                                     <div class="mt-2">
                                         <span class="badge bg-primary">Pontos: <span id="computer-score">0</span></span>
                                     </div>
@@ -34,7 +42,15 @@
                             <div class="col-md-6">
                                 <div id="player-area" class="text-center mb-4">
                                     <h3>Você</h3>
-                                    <div id="player-cards" class="cartas-jogador"></div>
+                                    <div id="player-cards" class="cartas-jogador">
+                                        @if (Model.Jogadores[1].Cartas != null && Model.Jogadores[1].Cartas.Any())
+                                        {
+                                            foreach (var carta in Model.Jogadores[1].Cartas)
+                                            {
+                                                <partial name="_CartaPartial" model="carta" />
+                                            }
+                                        }
+                                    </div>
                                     <div class="mt-2">
                                         <span class="badge bg-primary">Pontos: <span id="player-score">0</span></span>
                                     </div>
@@ -81,7 +97,7 @@
 
             async function jogarRodada() {
                 try {
-                    const response = await fetch(`/JogoWeb/DistribuirCartas?baralhoId=@Model.Baralho.BaralhoId&numeroJogadores=2`, {
+                    const response = await fetch(`/JogoWeb/DistribuirCartas?baralhoId=@Model.Baralho.BaralhoId&numeroJogadores=@Model.Jogadores.Count()`, {
                         method: 'GET'
                     });
 
@@ -97,16 +113,30 @@
                     computerCards.innerHTML = '';
                     playerCards.innerHTML = '';
 
-                    // Exibir cartas
-                    computador.cartas.forEach(carta => {
-                        const cartaElement = criarElementoCarta(carta);
-                        computerCards.appendChild(cartaElement);
-                    });
+                    // Exibir cartas usando a partial view via AJAX
+                    for (const carta of computador.cartas) {
+                        const cartaResponse = await fetch('/JogoWeb/RenderizarCarta', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(carta)
+                        });
+                        const cartaHtml = await cartaResponse.text();
+                        computerCards.insertAdjacentHTML('beforeend', cartaHtml);
+                    }
 
-                    jogador.cartas.forEach(carta => {
-                        const cartaElement = criarElementoCarta(carta);
-                        playerCards.appendChild(cartaElement);
-                    });
+                    for (const carta of jogador.cartas) {
+                        const cartaResponse = await fetch('/JogoWeb/RenderizarCarta', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(carta)
+                        });
+                        const cartaHtml = await cartaResponse.text();
+                        playerCards.insertAdjacentHTML('beforeend', cartaHtml);
+                    }
 
                     // Determinar vencedor
                     const computerMaxValue = Math.max(...computador.cartas.map(c => c.valor));
@@ -131,36 +161,6 @@
                     messageArea.className = 'alert alert-danger';
                     messageArea.textContent = 'Erro ao jogar a rodada. Tente novamente.';
                 }
-            }
-
-            function criarElementoCarta(carta) {
-                const cartaDiv = document.createElement('div');
-                cartaDiv.className = 'playing-card flipped';
-                
-                cartaDiv.innerHTML = `
-                    <div class="playing-card-inner">
-                        <div class="playing-card-back">
-                            <div class="card-pattern"></div>
-                        </div>
-                        <div class="playing-card-front ${carta.naipe === '♥' || carta.naipe === '♦' ? 'card-red' : 'card-black'}">
-                            <div class="card-content">
-                                <div class="card-corner top-left">
-                                    <span class="card-value">${carta.valorSimbolico}</span>
-                                    <span class="card-suit">${carta.naipe}</span>
-                                </div>
-                                <div class="card-center">
-                                    <span class="card-big-symbol">${carta.naipe}</span>
-                                </div>
-                                <div class="card-corner bottom-right">
-                                    <span class="card-value">${carta.valorSimbolico}</span>
-                                    <span class="card-suit">${carta.naipe}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                return cartaDiv;
             }
 
             playButton.addEventListener('click', jogarRodada);

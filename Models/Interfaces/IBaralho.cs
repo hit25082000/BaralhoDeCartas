@@ -4,6 +4,6 @@
     {
         string BaralhoId { get; }
         bool EstaEmbaralhado { get; }
-        int QuantidadeDeCartasRestantes { get; }
+        int QuantidadeDeCartasRestantes { get; set; }
     }
 }

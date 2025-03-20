@@ -20,10 +20,13 @@ namespace BaralhoDeCartas.Services
             _jogoFactory = jogoFactory;
 
         }
+
         public async Task<IJogoMaiorCarta> CriarJogoMaiorCartaAsync(int numeroJogadores)
         {
             IBaralho baralho = await _baralhoApiClient.CriarNovoBaralhoAsync();
             List<IJogador> jogadores = await DistribuirCartasAsync(baralho.BaralhoId, numeroJogadores);
+
+            baralho.QuantidadeDeCartasRestantes -= jogadores.Sum((jogador) => jogador.Cartas.Count());
 
             return _jogoFactory.CriarJogoMaiorCarta(jogadores, baralho);
         }

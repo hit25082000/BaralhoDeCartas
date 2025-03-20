@@ -26,7 +26,9 @@ namespace BaralhoDeCartas.Services
             IBaralho baralho = await _baralhoApiClient.CriarNovoBaralhoAsync();
             List<IJogadorDeBlackjack> jogadores = await IniciarRodadaAsync(baralho.BaralhoId, numeroJogadores);
 
-            return _jogoFactory.CriarJogoBlackJack(jogadores, baralho );
+            baralho.QuantidadeDeCartasRestantes -= jogadores.Sum((jogador) => jogador.Cartas.Count());
+
+            return _jogoFactory.CriarJogoBlackJack(jogadores, baralho);
         }
 
         public async Task<IBaralho> CriarNovoBaralhoAsync()
