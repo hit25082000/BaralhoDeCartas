@@ -8,6 +8,11 @@ namespace BaralhoDeCartas.Models
         {
             Jogadores = jogadores;
             Baralho = baralho;
+            
+            Random rnd = new Random();
+            int primeiroAJogar = rnd.Next(1, jogadores.Count());
+
+            JogadorAtual = jogadores[primeiroAJogar];
         }
         public List<IJogadorDeBlackjack> Jogadores { get; }
         public IBaralho Baralho { get; }
