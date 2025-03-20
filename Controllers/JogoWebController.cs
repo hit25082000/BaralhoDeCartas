@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using BaralhoDeCartas.Services.Interfaces;
 using BaralhoDeCartas.Models.Interfaces;
+using BaralhoDeCartas.Models.ViewModel;
 
 namespace BaralhoDeCartas.Controllers   
 {    
@@ -38,7 +39,7 @@ namespace BaralhoDeCartas.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> DistribuirCartasAsync(string baralhoId, int numeroJogadores)
+        public async Task<IActionResult> DistribuirCartas(string baralhoId, int numeroJogadores)
         {
             try
             {
@@ -51,7 +52,8 @@ namespace BaralhoDeCartas.Controllers
                         cartas = j.Cartas.Select(c => new {
                             valor = c.Valor,
                             valorSimbolico = c.ValorSimbolico,
-                            naipe = c.Naipe
+                            naipe = c.Naipe,
+                            imagem = c.ImagemUrl
                         })
                     })
                 });
@@ -62,22 +64,28 @@ namespace BaralhoDeCartas.Controllers
             }
         }
 
+        [HttpPost]
+        public IActionResult RenderizarCarta([FromBody] CartaViewModel carta)
+        {
+            return PartialView("_CartaPartial", carta);
+        }
+
         [HttpGet]
-        public async Task<IActionResult> IniciarRodadaAsync(string baralhoId, int numeroJogadores)
+        public async Task<IActionResult> IniciarRodada(string baralhoId, int numeroJogadores)
         {
             var jogadores = await _blackjackService.IniciarRodadaAsync(baralhoId, numeroJogadores);
             return Json(jogadores);
         }
 
         [HttpGet]
-        public async Task<IActionResult> ComprarCartaAsync(string baralhoId, IJogadorDeBlackjack jogadorId)
+        public async Task<IActionResult> ComprarCarta(string baralhoId, IJogadorDeBlackjack jogadorId)
         {
             var jogador = await _blackjackService.ComprarCartaAsync(baralhoId, jogadorId);
             return Json(jogador);
         }
 
         [HttpPost]
-        public async Task<IActionResult> FinalizarJogoAsync(string baralhoId)
+        public async Task<IActionResult> FinalizarJogo(string baralhoId)
         {
             await _maiorCartaService.FinalizarJogoAsync(baralhoId);
             return RedirectToAction("Index", "Jogos");
