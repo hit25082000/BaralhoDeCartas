@@ -2,8 +2,8 @@
 {
     public interface IJogadorDeBlackjack : IJogador
     {
-        bool Estourou { get; }
         bool Parou { get; set; }
+        bool Estourou { get; }
         bool TemBlackjack();
         int CalcularPontuacao();
     }

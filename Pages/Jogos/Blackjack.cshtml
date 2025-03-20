@@ -1,4 +1,5 @@
 @page
+@model BaralhoDeCartas.Models.Interfaces.IJogoDeBlackJack
 @{
     ViewData["Title"] = "Blackjack";
 }
@@ -42,20 +43,20 @@
 
                     <div class="text-center mb-4">
                         <div id="control-buttons">
-                            <button id="start-btn" class="btn btn-primary btn-lg me-2">
+                            <button id="start-btn" class="btn btn-primary btn-lg me-2" onclick="iniciarRodada()">
                                 <i class="bi bi-play-circle me-2"></i>Iniciar
                             </button>
-                            <button id="hit-btn" class="btn btn-success btn-lg me-2" disabled>
+                            <button id="hit-btn" class="btn btn-success btn-lg me-2" disabled onclick="comprarCarta(@Model.JogadorAtual.JogadorId)">
                                 <i class="bi bi-plus-circle me-2"></i>Pedir Carta
                             </button>
-                            <button id="stand-btn" class="btn btn-warning btn-lg" disabled>
+                            <button id="stand-btn" class="btn btn-warning btn-lg" disabled onclick="parar(@Model.JogadorAtual.JogadorId)>
                                 <i class="bi bi-hand-thumbs-up me-2"></i>Parar
                             </button>
                         </div>
                     </div>
 
                     <div class="text-center">
-                        <button id="new-game-btn" class="btn btn-outline-secondary btn-lg" disabled>
+                        <button id="new-game-btn" class="btn btn-outline-secondary btn-lg"  disabled>
                             <i class="bi bi-arrow-repeat me-2"></i>Novo Jogo
                         </button>
                     </div>
@@ -86,6 +87,73 @@
 </div>
 
 @section Scripts {
+    <script>
+        async function iniciarRodada() {
+            try {
+                const response = await fetch(`/JogoWeb/IniciarRodada?baralhoId=@Model.Baralho.BaralhoId&numeroJogadores=2`);
+                const jogadores = await response.json();
+
+                const areaJogadores = document.getElementById('area-jogadores');
+                areaJogadores.innerHTML = '';
+
+                jogadores.forEach(jogador => {
+                    const jogadorElement = document.createElement('div');
+                    jogadorElement.className = 'jogador-card';
+                    jogadorElement.innerHTML = `
+                        <h3>${jogador.nome}</h3>
+                        <div class="cartas-jogador">
+                            ${jogador.cartas.map(carta => `
+                                <div class="carta">
+                                    <div class="carta-valor">${carta.valor}</div>
+                                    <div class="carta-naipe">${carta.naipe}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="acoes-jogador">
+                            <button class="btn btn-success" onclick="comprarCarta('${jogador.jogadorId}')">
+                                Comprar Carta
+                            </button>
+                            <button class="btn btn-danger" onclick="parar('${jogador.jogadorId}')">
+                                Parar
+                            </button>
+                        </div>
+                    `;
+                    areaJogadores.appendChild(jogadorElement);
+                });
+            } catch (error) {
+                console.error('Erro ao iniciar rodada:', error);
+            }
+        }
+
+        async function comprarCarta(jogadorId) {
+            try {
+                const response = await fetch(`/JogoWeb/ComprarCarta?baralhoId=@Model.Baralho.BaralhoId&jogadorId=${jogadorId}`);
+                const carta = await response.json();
+
+                // Atualizar a interface com a nova carta
+                const jogadorElement = document.querySelector(`[data-jogador-id="${jogadorId}"]`);
+                const cartasJogador = jogadorElement.querySelector('.cartas-jogador');
+
+                const cartaElement = document.createElement('div');
+                cartaElement.className = 'carta';
+                cartaElement.innerHTML = `
+                    <div class="carta-valor">${carta.valor}</div>
+                    <div class="carta-naipe">${carta.naipe}</div>
+                `;
+
+                cartasJogador.appendChild(cartaElement);
+            } catch (error) {
+                console.error('Erro ao comprar carta:', error);
+            }
+        }
+
+        async function parar(jogadorId) {
+            console.log(`Jogador ${jogadorId} parou`);
+        }
+    </script>
+}
+
+@* @section Scripts {
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Elementos do DOM
@@ -406,4 +474,4 @@
         newGameBtn.addEventListener('click', prepareNewGame);
     });
 </script>
-} 
+}  *@

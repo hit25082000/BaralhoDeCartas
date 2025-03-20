@@ -1,7 +1,29 @@
 @page
+@model BaralhoDeCartas.Models.Interfaces.IJogoMaiorCarta
 @{
     ViewData["Title"] = "Maior Carta";
 }
+
+
+<div class="jogo-container">
+    <h1 class="titulo-jogo">Jogo de Maior Carta</h1>
+
+    <div class="info-baralho">
+        <p>ID do Baralho: @Model.Baralho.BaralhoId</p>
+        <p>Cartas Restantes: @Model.Baralho.QuantidadeDeCartasRestantes</p>
+        <p>Status: @(Model.Baralho.EstaEmbaralhado ? "Embaralhado" : "Não Embaralhado")</p>
+    </div>
+
+    <div class="acoes-jogo">
+        <button class="btn btn-primary btn-lg" onclick="distribuirCartas()">
+            Distribuir Cartas
+        </button>
+    </div>
+
+    <div id="area-jogadores" class="area-jogadores">
+        <!-- Os jogadores serão inseridos aqui dinamicamente -->
+    </div>
+</div>
 
 <div class="container py-5">
     <div class="row justify-content-center mb-4">

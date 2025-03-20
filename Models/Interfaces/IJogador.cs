@@ -1,10 +1,14 @@
-﻿namespace BaralhoDeCartas.Models.Interfaces
+﻿using System.Collections.Generic;
+
+namespace BaralhoDeCartas.Models.Interfaces
 {
     public interface IJogador
     {
-        int JogadorId { get; set; }
-        string Nome { get; set; }
-        List<ICarta> Cartas { get; set; }
+        int JogadorId { get; }
+        string Nome { get; }
+        List<ICarta> Cartas { get; }
+
+        void AdicionarCarta(ICarta carta);
         ICarta ObterCartaMaisAlta();
     }
 }

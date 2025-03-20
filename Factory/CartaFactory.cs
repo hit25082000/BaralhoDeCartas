@@ -10,13 +10,7 @@ namespace BaralhoDeCartas.Factory
         public List<ICarta> CriarCartas(CartasResponse response)
         {
             return response.Cards
-            .Select(c => (ICarta)new Carta
-            {
-                Codigo = c.Code,
-                Naipe = c.Suit,
-                ValorSimbolico = c.Value,
-                ImagemUrl = c.Image
-            })
+            .Select(c => (ICarta)new Carta(c.Code,c.Image,c.Value,c.Suit))
             .ToList();
         }
     }

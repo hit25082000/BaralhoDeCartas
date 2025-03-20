@@ -2,8 +2,8 @@
 {
     public interface IBaralho
     {
-        string BaralhoId { get; set; }
-        bool FoiEmbaralhado { get; set; }
-        int QuantidadeDeCartasRestantes { get; set; }
+        string BaralhoId { get; }
+        bool EstaEmbaralhado { get; }
+        int QuantidadeDeCartasRestantes { get; }
     }
 }

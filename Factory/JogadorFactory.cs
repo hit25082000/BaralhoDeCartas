@@ -9,25 +9,15 @@ namespace BaralhoDeCartas.Factory
     {
         public IJogador CriarJogador(List<ICarta> cartas, int cartasIniciaisPorJogador, int indice)
         {
-            return new Jogador
-            {
-                JogadorId = indice + 1,
-                Nome = $"Jogador {indice + 1}",
-                Cartas = cartas.Skip(indice * cartasIniciaisPorJogador).Take(cartasIniciaisPorJogador).ToList()
-            };
+            int jogadorId = indice + 1;
+            string nomeJogador = $"Jogador {indice + 1}";
+
+            return new Jogador(cartas, jogadorId, nomeJogador);
         }
 
         public IJogadorDeBlackjack CriarJogadorDeBlackJack(List<ICarta> cartas, int cartasIniciaisPorJogador,int indice)
         {
-            return new JogadorDeBlackjack
-            {
-                JogadorId = indice + 1,
-                Nome = $"Jogador {indice + 1}",
-                Cartas = cartas
-                          .Skip(indice * cartasIniciaisPorJogador)
-                          .Take(cartasIniciaisPorJogador)
-                          .ToList()
-            };
+            return new JogadorDeBlackjack(cartas, jogadorId, nomeJogador);
         }
     }
 }

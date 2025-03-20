@@ -4,13 +4,14 @@ namespace BaralhoDeCartas.Models
 {
     public class Baralho : IBaralho
     {
-        public Baralho()
+        public Baralho(string baralhoId)
         {
-            FoiEmbaralhado = true;
+            BaralhoId = baralhoId;
+            EstaEmbaralhado = true;
         }
 
-        public string BaralhoId { get; set; }
-        public bool FoiEmbaralhado { get; set; }
+        public string BaralhoId { get; }
+        public bool EstaEmbaralhado { get; set; }
         public int QuantidadeDeCartasRestantes { get; set; }
     }
 }

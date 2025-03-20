@@ -4,12 +4,20 @@ namespace BaralhoDeCartas.Models
 {
     public class Carta : ICarta
     {
-        public string Codigo { get; set; }
-        public string ImagemUrl { get; set; }
-        public string ValorSimbolico { get; set; }
-        public string Naipe { get; set; }
+        public Carta(string codigo, string imagemUrl, string valorSimbolico, string naipe)
+        {
+            Codigo = codigo;
+            ImagemUrl = imagemUrl;
+            ValorSimbolico = valorSimbolico;
+            Naipe = naipe;
+        }
 
-        public int ValorNumerico
+        public string Codigo { get; }
+        public string ImagemUrl { get; }
+        public string ValorSimbolico { get; }
+        public string Naipe { get; }
+
+        public virtual int Valor
         {
             get
             {
@@ -22,21 +30,6 @@ namespace BaralhoDeCartas.Models
                     _ => int.TryParse(ValorSimbolico, out int valor) ? valor : 0
                 };
             }
-        }
-
-        public int ValorBlackjack
-        {
-            get
-            {
-                return ValorSimbolico switch
-                {
-                    "ACE" => 11, // Ás pode valer 1 ou 11
-                    "KING" => 10,
-                    "QUEEN" => 10,
-                    "JACK" => 10,
-                    _ => int.TryParse(ValorSimbolico, out int valor) ? valor : 0
-                };
-            }
-        }
+        }        
     }
 }

@@ -1,25 +1,20 @@
 ﻿using BaralhoDeCartas.Models.Interfaces;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace BaralhoDeCartas.Models
 {
-    public class JogadorDeBlackjack : IJogadorDeBlackjack
+    public class JogadorDeBlackjack : Jogador, IJogadorDeBlackjack
     {
-        public JogadorDeBlackjack()
+        public JogadorDeBlackjack(int jogadorId, string nome)
+            : base(jogadorId, nome)
         {
             Parou = false;
-            Cartas = new List<ICarta>();
         }
 
-        public int JogadorId { get; set; }
-        public string Nome { get; set; }
-        public List<ICarta> Cartas { get; set; }
-        public bool Estourou => CalcularPontuacao() > 21;
         public bool Parou { get; set; }
 
-        public ICarta ObterCartaMaisAlta()
-        {
-            return Cartas.OrderByDescending(c => c.ValorNumerico).FirstOrDefault();
-        }  
+        public bool Estourou => CalcularPontuacao() > 21;
 
         public bool TemBlackjack()
         {
@@ -28,8 +23,9 @@ namespace BaralhoDeCartas.Models
 
         public int CalcularPontuacao()
         {
-            var ases = Cartas.Count(c => c.ValorSimbolico == "ACE");
-            var pontuacao = Cartas.Sum(c => c.ValorBlackjack);
+            var cartasBlackjack = Cartas.Select(c => new CartaBlackjack(c)).ToList();
+            int pontuacao = cartasBlackjack.Sum(c => c.ValorBlackjack);
+            int ases = cartasBlackjack.Count(c => c.ValorSimbolico == "ACE");
 
             while (pontuacao > 21 && ases > 0)
             {
@@ -41,3 +37,4 @@ namespace BaralhoDeCartas.Models
         }
     }
 }
+
