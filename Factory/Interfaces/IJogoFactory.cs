@@ -7,7 +7,7 @@ namespace BaralhoDeCartas.Factory
 {
     public interface IJogoFactory 
     {
-        IJogoMaiorCarta CriarJogoMaiorCarta(IBaralho baralho);
-        IJogoBlackJack CriarJogoBlackJack(IBaralho baralho);
+        IJogoMaiorCarta CriarJogoMaiorCarta(List<IJogador> jogadores, IBaralho baralho);
+        IJogoBlackJack CriarJogoBlackJack(List<IJogadorDeBlackjack> jogadores, IBaralho baralho);
     }
 }

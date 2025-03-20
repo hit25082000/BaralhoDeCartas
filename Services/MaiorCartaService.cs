@@ -1,4 +1,5 @@
 using BaralhoDeCartas.Api.Interfaces;
+using BaralhoDeCartas.Factory;
 using BaralhoDeCartas.Factory.Interfaces;
 using BaralhoDeCartas.Models.Interfaces;
 using BaralhoDeCartas.Services.Interfaces;
@@ -9,28 +10,35 @@ namespace BaralhoDeCartas.Services
     {
         private readonly IBaralhoApiClient _baralhoApiClient;
         private readonly IJogadorFactory _jogadorFactory;
+        private readonly IJogoFactory _jogoFactory;
         private const int CARTAS_POR_JOGADOR = 5;
 
-        public MaiorCartaService(IBaralhoApiClient baralhoApiClient, IJogadorFactory jogadorFactory)
+        public MaiorCartaService(IBaralhoApiClient baralhoApiClient, IJogadorFactory jogadorFactory, IJogoFactory jogoFactory)
         {
             _baralhoApiClient = baralhoApiClient;
             _jogadorFactory = jogadorFactory;
+            _jogoFactory = jogoFactory;
 
         }
-
-        public async Task<IBaralho> IniciarNovoJogo()
+        public async Task<IJogoMaiorCarta> CriarJogoMaiorCartaAsync(int numeroJogadores)
         {
+            IBaralho baralho = await _baralhoApiClient.CriarNovoBaralhoAsync();
+            List<IJogador> jogadores = await DistribuirCartasAsync(baralho.BaralhoId, numeroJogadores);
 
-
-            return await _baralhoApiClient.CriarNovoBaralho();
+            return _jogoFactory.CriarJogoMaiorCarta(jogadores, baralho);
         }
 
-        public async Task<List<IJogador>> DistribuirCartas(string baralhoId, int numeroJogadores)
+        public async Task<IBaralho> CriarNovoBaralhoAsync()
+        {
+            return await _baralhoApiClient.CriarNovoBaralhoAsync();
+        }
+
+        public async Task<List<IJogador>> DistribuirCartasAsync(string baralhoId, int numeroJogadores)
         {
             List<IJogador> jogadores = new List<IJogador>();
             int totalCartas = numeroJogadores * CARTAS_POR_JOGADOR;
 
-            List<ICarta> todasAsCartas = await _baralhoApiClient.ComprarCartas(baralhoId, totalCartas);
+            List<ICarta> todasAsCartas = await _baralhoApiClient.ComprarCartasAsync(baralhoId, totalCartas);
             
             for (int i = 0; i < numeroJogadores; i++)
             {
@@ -46,16 +54,16 @@ namespace BaralhoDeCartas.Services
             return jogadores;
         }
 
-        public async Task<IJogador> DeterminarVencedor(List<IJogador> jogadores)
+        public async Task<IJogador> DeterminarVencedorAsync(List<IJogador> jogadores)
         {
             return jogadores
                 .OrderByDescending(j => j.ObterCartaDeMaiorValor()?.Valor ?? 0)
                 .FirstOrDefault();
         }
 
-        public async Task<bool> FinalizarJogo(string baralhoId)
+        public async Task<IBaralho> FinalizarJogoAsync(string baralhoId)
         {
-            return await _baralhoApiClient.RetornarCartasAoBaralho(baralhoId);
+            return await _baralhoApiClient.RetornarCartasAoBaralhoAsync(baralhoId);
         }
     }
 } 

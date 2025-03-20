@@ -20,19 +20,29 @@ namespace BaralhoDeCartas.Api
             _cartaFactory = cartaFactory;
         }
 
-        public async Task<IBaralho> CriarNovoBaralho()
+        public async Task<IBaralho> CriarNovoBaralhoAsync()
         {
             var response = await _httpClient.GetAsync($"{BaseUrl}/new/shuffle/");
             response.EnsureSuccessStatusCode();
 
             string content = await response.Content.ReadAsStringAsync();
-            BaralhoResponse baralhoResponse = JsonSerializer.Deserialize<BaralhoResponse>(content);
+            var baralhoResponse = JsonSerializer.Deserialize<BaralhoResponse>(content);
+
+            if (!baralhoResponse.Success)
+            {
+                throw new HttpRequestException("Falha ao criar novo baralho");
+            }
 
             return _baralhoFactory.CriarBaralho(baralhoResponse);
         }
 
-        public async Task<IBaralho> EmbaralharBaralho(string baralhoId, bool embaralharSomenteCartasRestantes)
+        public async Task<IBaralho> EmbaralharBaralhoAsync(string baralhoId, bool embaralharSomenteCartasRestantes)
         {
+            if (string.IsNullOrEmpty(baralhoId))
+            {
+                throw new ArgumentException("ID do baralho não pode ser nulo ou vazio", nameof(baralhoId));
+            }
+
             string url = $"{BaseUrl}/{baralhoId}/shuffle/";
 
             if (embaralharSomenteCartasRestantes)
@@ -40,7 +50,54 @@ namespace BaralhoDeCartas.Api
                 url = $"{BaseUrl}/{baralhoId}/shuffle/?remaining=true";
             }
 
-            HttpResponseMessage response = await _httpClient.GetAsync(url);
+            var response = await _httpClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            var baralhoResponse = JsonSerializer.Deserialize<BaralhoResponse>(content);
+
+            if (!baralhoResponse.Success)
+            {
+                throw new HttpRequestException($"Falha ao comprar cartas");
+            }
+
+            return _baralhoFactory.CriarBaralho(baralhoResponse);
+        }
+
+        public async Task<List<ICarta>> ComprarCartasAsync(string baralhoId, int quantidade)
+        {
+            if (string.IsNullOrEmpty(baralhoId))
+            {
+                throw new ArgumentException("ID do baralho não pode ser nulo ou vazio", nameof(baralhoId));
+            }
+
+            if (quantidade <= 0)
+            {
+                throw new ArgumentException("Quantidade de cartas deve ser maior que zero", nameof(quantidade));
+            }
+
+            var response = await _httpClient.GetAsync($"{BaseUrl}/{baralhoId}/draw/?count={quantidade}");
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            var cartasResponse = JsonSerializer.Deserialize<CartasResponse>(content);
+
+            if (!cartasResponse.Success)
+            {
+                throw new HttpRequestException($"Falha ao comprar cartas");
+            }
+
+            return _cartaFactory.CriarCartas(cartasResponse);
+        }
+
+        public async Task<IBaralho> RetornarCartasAoBaralhoAsync(string baralhoId)
+        {
+            if (string.IsNullOrEmpty(baralhoId))
+            {
+                throw new ArgumentException("ID do baralho não pode ser nulo ou vazio", nameof(baralhoId));
+            }
+
+            var response = await _httpClient.GetAsync($"{BaseUrl}/{baralhoId}/return/");
 
             response.EnsureSuccessStatusCode();
 
@@ -48,28 +105,6 @@ namespace BaralhoDeCartas.Api
             var baralhoResponse = JsonSerializer.Deserialize<BaralhoResponse>(content);
 
             return _baralhoFactory.CriarBaralho(baralhoResponse);
-        }
-
-        public async Task<List<ICarta>> ComprarCartas(string baralhoId, int quantidade)
-        {
-            var response = await _httpClient.GetAsync($"{BaseUrl}/{baralhoId}/draw/?count={quantidade}");
-            response.EnsureSuccessStatusCode();
-
-            var content = await response.Content.ReadAsStringAsync();
-            var cartasResponse = JsonSerializer.Deserialize<CartasResponse>(content);
-
-            return _cartaFactory.CriarCartas(cartasResponse);
-        }
-
-        public async Task<bool> RetornarCartasAoBaralho(string baralhoId)
-        {
-            var response = await _httpClient.GetAsync($"{BaseUrl}/{baralhoId}/return/");
-            response.EnsureSuccessStatusCode();
-
-            var content = await response.Content.ReadAsStringAsync();
-            var baralhoResponse = JsonSerializer.Deserialize<BaralhoResponse>(content);
-
-            return baralhoResponse.Success;
         }
     }
 }

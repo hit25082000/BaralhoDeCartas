@@ -4,12 +4,27 @@ namespace BaralhoDeCartas.Models
 {
     public class JogoBlackJack : IJogoBlackJack
     {
-        public JogoBlackJack()
+        public JogoBlackJack(List<IJogadorDeBlackjack> jogadores, IBaralho baralho)
         {
-            Jogadores = new List<IJogadorDeBlackjack>();
+            Jogadores = jogadores;
+            Baralho = baralho;
         }
-        public List<IJogadorDeBlackjack> Jogadores { get; set; }
-        public required IBaralho Baralho { get; set; }
-        public IJogadorDeBlackjack JogadorAtual { get; set; }
+        public List<IJogadorDeBlackjack> Jogadores { get; }
+        public IBaralho Baralho { get; }
+        public IJogadorDeBlackjack JogadorAtual { get; private set; }
+
+        public void PassarRodada()
+        {
+            int jogadorAtualId = JogadorAtual.JogadorId;
+
+            if (jogadorAtualId == Jogadores.Count)
+            {
+                JogadorAtual = Jogadores[0];
+            }
+            else
+            {
+                JogadorAtual = Jogadores[jogadorAtualId + 1];
+            }
+        }
     }
 }

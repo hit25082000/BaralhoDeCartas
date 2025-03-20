@@ -6,16 +6,16 @@ namespace BaralhoDeCartas.Controllers
 {    
     public class JogoWebController : Controller
     {
-        private readonly IMaiorCartaService _jogoService;
+        private readonly IMaiorCartaService _maiorCartaService;
         private readonly IBlackjackService _blackjackService;
 
         public JogoWebController(IMaiorCartaService jogoService, IBlackjackService blackjackService)
         {
-            _jogoService = jogoService;
+            _maiorCartaService = jogoService;
             _blackjackService = blackjackService;
         }
 
-        public async Task<IActionResult> Index(string jogo)
+        public async Task<IActionResult> Index(string jogo, int numeroJogadores)
         {
             if (string.IsNullOrEmpty(jogo))
             {
@@ -25,11 +25,11 @@ namespace BaralhoDeCartas.Controllers
             switch (jogo.ToLower())
             {
                 case "maiorcarta":
-                    var jogoMaiorCarta = await _jogoService.IniciarNovoJogo();
+                    var jogoMaiorCarta = await _maiorCartaService.CriarJogoMaiorCartaAsync(numeroJogadores);
                     return View("MaiorCarta", jogoMaiorCarta);
                 
                 case "blackjack":
-                    var jogoBlackjack = await _blackjackService.IniciarJogo();
+                    var jogoBlackjack = await _blackjackService.CriarJogoBlackJackAsync(numeroJogadores);
                     return View("Blackjack", jogoBlackjack);
                 
                 default:
@@ -38,30 +38,30 @@ namespace BaralhoDeCartas.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> DistribuirCartas(string baralhoId, int numeroJogadores)
+        public async Task<IActionResult> DistribuirCartasAsync(string baralhoId, int numeroJogadores)
         {
-            var jogadores = await _jogoService.DistribuirCartas(baralhoId, numeroJogadores);
+            var jogadores = await _maiorCartaService.DistribuirCartasAsync(baralhoId, numeroJogadores);
             return Json(jogadores);
         }
 
         [HttpGet]
-        public async Task<IActionResult> IniciarRodada(string baralhoId, int numeroJogadores)
+        public async Task<IActionResult> IniciarRodadaAsync(string baralhoId, int numeroJogadores)
         {
-            var jogadores = await _blackjackService.IniciarRodada(baralhoId, numeroJogadores);
+            var jogadores = await _blackjackService.IniciarRodadaAsync(baralhoId, numeroJogadores);
             return Json(jogadores);
         }
 
         [HttpGet]
-        public async Task<IActionResult> ComprarCarta(string baralhoId, IJogadorDeBlackjack jogadorId)
+        public async Task<IActionResult> ComprarCartaAsync(string baralhoId, IJogadorDeBlackjack jogadorId)
         {
-            var jogador = await _blackjackService.ComprarCarta(baralhoId, jogadorId);
+            var jogador = await _blackjackService.ComprarCartaAsync(baralhoId, jogadorId);
             return Json(jogador);
         }
 
         [HttpPost]
-        public async Task<IActionResult> FinalizarJogo(string baralhoId)
+        public async Task<IActionResult> FinalizarJogoAsync(string baralhoId)
         {
-            await _jogoService.FinalizarJogo(baralhoId);
+            await _maiorCartaService.FinalizarJogoAsync(baralhoId);
             return RedirectToAction("Index", "Jogos");
         }
     }

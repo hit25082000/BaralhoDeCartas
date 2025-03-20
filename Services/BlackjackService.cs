@@ -1,4 +1,5 @@
 using BaralhoDeCartas.Api.Interfaces;
+using BaralhoDeCartas.Factory;
 using BaralhoDeCartas.Factory.Interfaces;
 using BaralhoDeCartas.Models;
 using BaralhoDeCartas.Models.Interfaces;
@@ -10,25 +11,35 @@ namespace BaralhoDeCartas.Services
     {
         private readonly IBaralhoApiClient _baralhoApiClient;
         private readonly IJogadorFactory _jogadorFactory;
+        private readonly IJogoFactory _jogoFactory;
         private const int CartasIniciaisPorJogador = 2;
      
-        public BlackjackService(IBaralhoApiClient baralhoApiClient,IJogadorFactory jogadorFactory)
+        public BlackjackService(IBaralhoApiClient baralhoApiClient,IJogadorFactory jogadorFactory,IJogoFactory jogoFactory)
         {
             _baralhoApiClient = baralhoApiClient;
             _jogadorFactory = jogadorFactory;
+            _jogoFactory = jogoFactory;
         }
 
-        public async Task<IBaralho> IniciarJogo()
+        public async Task<IJogoBlackJack> CriarJogoBlackJackAsync(int numeroJogadores)
         {
-            return await _baralhoApiClient.CriarNovoBaralho();
+            IBaralho baralho = await _baralhoApiClient.CriarNovoBaralhoAsync();
+            List<IJogadorDeBlackjack> jogadores = await IniciarRodadaAsync(baralho.BaralhoId, numeroJogadores);
+
+            return _jogoFactory.CriarJogoBlackJack(jogadores, baralho );
         }
 
-        public async Task<List<IJogadorDeBlackjack>> IniciarRodada(string baralhoId, int numeroJogadores)
+        public async Task<IBaralho> CriarNovoBaralhoAsync()
+        {
+            return await _baralhoApiClient.CriarNovoBaralhoAsync();
+        }
+
+        public async Task<List<IJogadorDeBlackjack>> IniciarRodadaAsync(string baralhoId, int numeroJogadores)
         {
             List<IJogadorDeBlackjack> jogadores = new List<IJogadorDeBlackjack>();
             int totalCartas = numeroJogadores * CartasIniciaisPorJogador;
 
-            List<ICarta> todasAsCartas = await _baralhoApiClient.ComprarCartas(baralhoId, totalCartas);
+            List<ICarta> todasAsCartas = await _baralhoApiClient.ComprarCartasAsync(baralhoId, totalCartas);
             
             for (int i = 0; i < numeroJogadores; i++)
             {
@@ -46,14 +57,14 @@ namespace BaralhoDeCartas.Services
             return jogadores;
         }
 
-        public async Task<ICarta> ComprarCarta(string baralhoId, IJogadorDeBlackjack jogador)
+        public async Task<ICarta> ComprarCartaAsync(string baralhoId, IJogadorDeBlackjack jogador)
         {
             if (jogador.Parou || jogador.Estourou)
             {
                 throw new InvalidOperationException($"O jogador {jogador.Nome} não pode comprar mais cartas.");
             }
 
-            var cartas = await _baralhoApiClient.ComprarCartas(baralhoId, 1);
+            var cartas = await _baralhoApiClient.ComprarCartasAsync(baralhoId, 1);
             var novaCarta = cartas.FirstOrDefault();
             
             if (novaCarta != null)
@@ -64,7 +75,7 @@ namespace BaralhoDeCartas.Services
             return novaCarta;
         }
 
-        public List<IJogadorDeBlackjack> DeterminarVencedores(List<IJogadorDeBlackjack> jogadores)
+        public List<IJogadorDeBlackjack> DeterminarVencedoresAsync(List<IJogadorDeBlackjack> jogadores)
         {
             var jogadoresValidos = jogadores.Where(j => !j.Estourou).ToList();
 
@@ -84,9 +95,9 @@ namespace BaralhoDeCartas.Services
             return jogadoresValidos.Where(j => j.CalcularPontuacao() == maiorPontuacao).ToList();
         }
 
-        public async Task<bool> FinalizarJogo(string baralhoId)
+        public async Task<IBaralho> RetornarCartasAoBaralhoAsync(string baralhoId)
         {
-            return await _baralhoApiClient.RetornarCartasAoBaralho(baralhoId);
+            return await _baralhoApiClient.RetornarCartasAoBaralhoAsync(baralhoId);
         }
     }
 } 

@@ -17,11 +17,11 @@ namespace BaralhoDeCartas.Controllers
         }
 
         [HttpGet("iniciar")]
-        public async Task<ActionResult<IBaralho>> IniciarJogo()
+        public async Task<ActionResult<IBaralho>> IniciarJogoAsync()
         {
             try
             {
-                var baralho = await _jogoService.IniciarNovoJogo();
+                var baralho = await _jogoService.CriarNovoBaralhoAsync();
                 return Ok(baralho);
             }
             catch (Exception ex)
@@ -31,7 +31,7 @@ namespace BaralhoDeCartas.Controllers
         }
 
         [HttpPost("{baralhoId}/distribuir/{numeroJogadores}")]
-        public async Task<ActionResult<List<JogadorDTO>>> DistribuirCartas(string baralhoId, int numeroJogadores)
+        public async Task<ActionResult<List<JogadorDTO>>> DistribuirCartasAsync(string baralhoId, int numeroJogadores)
         {
             try
             {
@@ -40,7 +40,7 @@ namespace BaralhoDeCartas.Controllers
                     return BadRequest("O número de jogadores deve ser maior que zero.");
                 }
 
-                var jogadores = await _jogoService.DistribuirCartas(baralhoId, numeroJogadores);
+                var jogadores = await _jogoService.DistribuirCartasAsync(baralhoId, numeroJogadores);
                 var jogadoresDTO = JogadorDTO.FromJogadores(jogadores);
                 return Ok(jogadoresDTO);
             }
@@ -51,7 +51,7 @@ namespace BaralhoDeCartas.Controllers
         }
 
         [HttpPost("/vencedor")]
-        public async Task<ActionResult<JogadorDTO>> ObterVencedor([FromBody] List<JogadorDTO> jogadoresDTO)
+        public async Task<ActionResult<JogadorDTO>> ObterVencedorAsync([FromBody] List<JogadorDTO> jogadoresDTO)
         {
             try
             {
@@ -61,7 +61,7 @@ namespace BaralhoDeCartas.Controllers
                 }
 
                 var jogadores = JogadorDTO.ToJogadores(jogadoresDTO);
-                var vencedor = await _jogoService.DeterminarVencedor(jogadores);
+                var vencedor = await _jogoService.DeterminarVencedorAsync(jogadores);
                 return Ok(new JogadorDTO(vencedor));
             }
             catch (Exception ex)
@@ -71,11 +71,11 @@ namespace BaralhoDeCartas.Controllers
         }
 
         [HttpPost("{baralhoId}/finalizar")]
-        public async Task<ActionResult<bool>> FinalizarJogo(string baralhoId)
+        public async Task<ActionResult<bool>> FinalizarJogosync(string baralhoId)
         {
             try
             {
-                var resultado = await _jogoService.FinalizarJogo(baralhoId);
+                var resultado = await _jogoService.FinalizarJogoAsync(baralhoId);
                 return Ok(resultado);
             }
             catch (Exception ex)

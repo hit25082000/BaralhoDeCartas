@@ -17,11 +17,11 @@ namespace BaralhoDeCartas.Controllers
         }
 
         [HttpGet("iniciar")]
-        public async Task<ActionResult<IBaralho>> IniciarJogo()
+        public async Task<ActionResult<IBaralho>> IniciarJogoAsync()
         {
             try
             {
-                var baralho = await _jogoService.IniciarJogo();
+                var baralho = await _jogoService.CriarNovoBaralhoAsync();
                 return Ok(baralho);
             }
             catch (Exception ex)
@@ -31,16 +31,21 @@ namespace BaralhoDeCartas.Controllers
         }
 
         [HttpPost("{baralhoId}/iniciar-rodada/{numeroJogadores}")]
-        public async Task<ActionResult<List<JogadorBlackjackDTO>>> IniciarRodada(string baralhoId, int numeroJogadores)
+        public async Task<ActionResult<List<JogadorBlackjackDTO>>> IniciarRodadaAsync(string baralhoId, int numeroJogadores)
         {
             try
             {
+                if (string.IsNullOrEmpty(baralhoId))
+                {
+                    return BadRequest("O ID do baralho não pode ser nulo ou vazio.");
+                }
+
                 if (numeroJogadores <= 0)
                 {
                     return BadRequest("O número de jogadores deve ser maior que zero.");
                 }
 
-                var jogadores = await _jogoService.IniciarRodada(baralhoId, numeroJogadores);
+                var jogadores = await _jogoService.IniciarRodadaAsync(baralhoId, numeroJogadores);
                 var jogadoresDTO = JogadorBlackjackDTO.FromJogadores(jogadores);
                 return Ok(jogadoresDTO);
             }
@@ -55,10 +60,20 @@ namespace BaralhoDeCartas.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(baralhoId))
+                {
+                    return BadRequest("O ID do baralho não pode ser nulo ou vazio.");
+                }
+
+                if (jogadorDTO == null)
+                {
+                    return BadRequest("O jogador não pode ser nulo.");
+                }
+
                 var jogadores = JogadorBlackjackDTO.ToJogadores(new List<JogadorBlackjackDTO> { jogadorDTO });
                 var jogador = jogadores.First();
 
-                var novaCarta = await _jogoService.ComprarCarta(baralhoId, jogador);
+                var novaCarta = await _jogoService.ComprarCartaAsync(baralhoId, jogador);
                 return Ok(new CartaDTO(novaCarta));
             }
             catch (InvalidOperationException ex)
@@ -76,6 +91,11 @@ namespace BaralhoDeCartas.Controllers
         {
             try
             {
+                if (jogadorDTO == null)
+                {
+                    return BadRequest("O jogador não pode ser nulo.");
+                }
+
                 var jogadores = JogadorBlackjackDTO.ToJogadores(new List<JogadorBlackjackDTO> { jogadorDTO });
                 var jogador = jogadores.First();
                 jogador.Parou = true;
@@ -89,13 +109,23 @@ namespace BaralhoDeCartas.Controllers
         }
 
         [HttpPost("{baralhoId}/finalizar")]
-        public async Task<ActionResult<ResultadoRodadaBlackjackDTO>> FinalizarRodada(string baralhoId, [FromBody] List<JogadorBlackjackDTO> jogadoresDTO)
+        public async Task<ActionResult<ResultadoRodadaBlackjackDTO>> FinalizarRodadaAsync(string baralhoId, [FromBody] List<JogadorBlackjackDTO> jogadoresDTO)
         {
             try
             {
+                if (string.IsNullOrEmpty(baralhoId))
+                {
+                    return BadRequest("O ID do baralho não pode ser nulo ou vazio.");
+                }
+
+                if (jogadoresDTO == null || jogadoresDTO.Count == 0)
+                {
+                    return BadRequest("A lista de jogadores não pode estar vazia.");
+                }
+
                 var jogadores = JogadorBlackjackDTO.ToJogadores(jogadoresDTO);
-                var vencedores = _jogoService.DeterminarVencedores(jogadores);
-                await _jogoService.FinalizarJogo(baralhoId);
+                var vencedores = _jogoService.DeterminarVencedoresAsync(jogadores);
+                await _jogoService.RetornarCartasAoBaralhoAsync(baralhoId);
 
                 var resultado = new ResultadoRodadaBlackjackDTO
                 {

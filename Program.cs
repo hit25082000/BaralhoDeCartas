@@ -40,6 +40,7 @@ builder.Services.AddScoped<IBlackjackService, BlackjackService>();
 builder.Services.AddScoped<IJogadorFactory, JogadorFactory>();
 builder.Services.AddScoped<ICartaFactory, CartaFactory>();
 builder.Services.AddScoped<IBaralhoFactory, BaralhoFactory>();
+builder.Services.AddScoped<IJogoFactory, JogoFactory>();
 
 var app = builder.Build();
 

@@ -7,20 +7,14 @@ namespace BaralhoDeCartas.Factory
 {
     public class JogoFactory : IJogoFactory
     {
-        public IJogoMaiorCarta CriarJogoMaiorCarta(IBaralho baralho)
+        public IJogoMaiorCarta CriarJogoMaiorCarta(List<IJogador> jogadores,IBaralho baralho)
         {
-            return new JogoMaiorCarta
-            {
-                Baralho = baralho
-            };           
+            return new JogoMaiorCarta(jogadores, baralho);
         }
 
-        public IJogoBlackJack CriarJogoBlackJack(IBaralho baralho)
+        public IJogoBlackJack CriarJogoBlackJack(List<IJogadorDeBlackjack> jogadores, IBaralho baralho)
         {
-            return new JogoBlackJack
-            {
-                Baralho = baralho
-            };
+            return new JogoBlackJack(jogadores, baralho);            
         }
     }
 }

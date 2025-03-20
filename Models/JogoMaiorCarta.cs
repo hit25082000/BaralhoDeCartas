@@ -4,9 +4,10 @@ namespace BaralhoDeCartas.Models
 {
     public class JogoMaiorCarta : IJogoMaiorCarta
     {
-        public JogoMaiorCarta()
+        public JogoMaiorCarta(List<IJogador> jogadores, IBaralho baralho)
         {
-            Jogadores = new List<IJogador>();
+            Jogadores = jogadores;
+            Baralho = baralho;
         }
         public List<IJogador> Jogadores { get; set; }
         public IBaralho Baralho { get; set; }
