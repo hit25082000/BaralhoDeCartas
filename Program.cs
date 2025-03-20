@@ -2,6 +2,8 @@ using BaralhoDeCartas.Api;
 using BaralhoDeCartas.Api.Interfaces;
 using BaralhoDeCartas.Factory;
 using BaralhoDeCartas.Factory.Interfaces;
+using BaralhoDeCartas.Models;
+using BaralhoDeCartas.Models.Interfaces;
 using BaralhoDeCartas.Services;
 using BaralhoDeCartas.Services.Interfaces;
 using Scalar.AspNetCore;
@@ -9,8 +11,7 @@ using Scalar.AspNetCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorPages();
-builder.Services.AddControllers();
+builder.Services.AddControllersWithViews();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
@@ -47,12 +48,16 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
+    app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
     
     // UseHttpsRedirection apenas em produção
     app.UseHttpsRedirection();
+}
+else
+{
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseCors("AllowScalar");
@@ -66,7 +71,8 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapRazorPages();
-app.MapControllers();
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

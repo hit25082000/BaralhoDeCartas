@@ -40,8 +40,26 @@ namespace BaralhoDeCartas.Controllers
         [HttpGet]
         public async Task<IActionResult> DistribuirCartasAsync(string baralhoId, int numeroJogadores)
         {
-            var jogadores = await _maiorCartaService.DistribuirCartasAsync(baralhoId, numeroJogadores);
-            return Json(jogadores);
+            try
+            {
+                var jogadores = await _maiorCartaService.DistribuirCartasAsync(baralhoId, numeroJogadores);
+                return Json(new { 
+                    success = true, 
+                    data = jogadores.Select(j => new {
+                        id = j.JogadorId,
+                        nome = j.Nome,
+                        cartas = j.Cartas.Select(c => new {
+                            valor = c.Valor,
+                            valorSimbolico = c.ValorSimbolico,
+                            naipe = c.Naipe
+                        })
+                    })
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = ex.Message });
+            }
         }
 
         [HttpGet]

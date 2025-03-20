@@ -1,77 +1,169 @@
-@model BaralhoDeCartas.Models.Interfaces.IBaralho
-
+@model BaralhoDeCartas.Models.Interfaces.IJogoMaiorCarta
 @{
-    ViewData["Title"] = "Jogo de Maior Carta";
+    ViewData["Title"] = "Maior Carta";
+    Layout = "_Layout";
 }
+
+<link rel="stylesheet" href="~/css/jogo.css" />
 
 <div class="jogo-container">
     <h1 class="titulo-jogo">Jogo de Maior Carta</h1>
-    
+
     <div class="info-baralho">
-        <p>ID do Baralho: @Model.BaralhoId</p>
-        <p>Cartas Restantes: @Model.QuantidadeDeCartasRestantes</p>
-        <p>Status: @(Model.EstaEmbaralhado ? "Embaralhado" : "Não Embaralhado")</p>
+        <p>ID do Baralho: @Model.Baralho.BaralhoId</p>
+        <p>Cartas Restantes: @Model.Baralho.QuantidadeDeCartasRestantes</p>
+        <p>Status: @(Model.Baralho.EstaEmbaralhado ? "Embaralhado" : "Não Embaralhado")</p>
+        <p>Número de Jogadores: @Model.Jogadores.Count</p>
     </div>
 
-    <div class="acoes-jogo">
-        <button class="btn btn-primary btn-lg" onclick="distribuirCartas()">
-            Distribuir Cartas
-        </button>
-    </div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div id="computer-area" class="text-center mb-4">
+                                    <h3>Computador</h3>
+                                    <div id="computer-cards" class="cartas-jogador"></div>
+                                    <div class="mt-2">
+                                        <span class="badge bg-primary">Pontos: <span id="computer-score">0</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div id="player-area" class="text-center mb-4">
+                                    <h3>Você</h3>
+                                    <div id="player-cards" class="cartas-jogador"></div>
+                                    <div class="mt-2">
+                                        <span class="badge bg-primary">Pontos: <span id="player-score">0</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-    <div id="area-jogadores" class="area-jogadores">
-        <!-- Os jogadores serão inseridos aqui dinamicamente -->
+                        <div class="text-center mt-4">
+                            <div id="message-area" class="alert alert-info mb-4" role="alert">
+                                Clique em "Jogar" para começar!
+                            </div>
+                            <button id="play-button" class="btn btn-primary btn-lg">
+                                <i class="bi bi-play-circle me-2"></i>Jogar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-4 shadow">
+                    <div class="card-body">
+                        <h4 class="card-title">Regras do Jogo</h4>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">Cada jogador recebe uma carta aleatória</li>
+                            <li class="list-group-item">A carta com o valor mais alto vence</li>
+                            <li class="list-group-item">Ás (A) é a carta mais alta</li>
+                            <li class="list-group-item">Em caso de empate, o computador vence</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        async function distribuirCartas() {
-            try {
-                const response = await fetch(`/api/MaiorCartaApi/@Model.BaralhoId/distribuir/2`, {
-                    method: 'POST'
-                });
-                const jogadores = await response.json();
-                
-                const areaJogadores = document.getElementById('area-jogadores');
-                areaJogadores.innerHTML = '';
-                
-                jogadores.forEach(jogador => {
-                    const jogadorElement = document.createElement('div');
-                    jogadorElement.className = 'jogador-card';
-                    jogadorElement.innerHTML = `
-                        <h3>${jogador.nome}</h3>
-                        <div class="cartas-jogador">
-                            ${jogador.cartas.map(carta => `
-                                <div class="carta">
-                                    <div class="carta-valor">${carta.valorSimbolico}</div>
-                                    <div class="carta-naipe">${carta.naipe}</div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
-                    areaJogadores.appendChild(jogadorElement);
-                });
+        document.addEventListener('DOMContentLoaded', function() {
+            const computerCards = document.getElementById('computer-cards');
+            const playerCards = document.getElementById('player-cards');
+            const computerScore = document.getElementById('computer-score');
+            const playerScore = document.getElementById('player-score');
+            const messageArea = document.getElementById('message-area');
+            const playButton = document.getElementById('play-button');
 
-                // Determinar o vencedor
-                const vencedorResponse = await fetch('/api/MaiorCartaApi/vencedor', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(jogadores)
-                });
-                const vencedor = await vencedorResponse.json();
+            async function jogarRodada() {
+                try {
+                    const response = await fetch(`/JogoWeb/DistribuirCartas?baralhoId=@Model.Baralho.BaralhoId&numeroJogadores=2`, {
+                        method: 'GET'
+                    });
 
-                // Destacar o vencedor
-                const jogadorVencedor = document.querySelector(`[data-jogador-id="${vencedor.jogadorId}"]`);
-                if (jogadorVencedor) {
-                    jogadorVencedor.classList.add('vencedor');
-                    jogadorVencedor.querySelector('h3').textContent += ' (Vencedor!)';
+                    const result = await response.json();
+
+                    if (!result.success) {
+                        throw new Error(result.error);
+                    }
+
+                    const [computador, jogador] = result.data;
+
+                    // Limpar áreas de cartas
+                    computerCards.innerHTML = '';
+                    playerCards.innerHTML = '';
+
+                    // Exibir cartas
+                    computador.cartas.forEach(carta => {
+                        const cartaElement = criarElementoCarta(carta);
+                        computerCards.appendChild(cartaElement);
+                    });
+
+                    jogador.cartas.forEach(carta => {
+                        const cartaElement = criarElementoCarta(carta);
+                        playerCards.appendChild(cartaElement);
+                    });
+
+                    // Determinar vencedor
+                    const computerMaxValue = Math.max(...computador.cartas.map(c => c.valor));
+                    const playerMaxValue = Math.max(...jogador.cartas.map(c => c.valor));
+
+                    if (computerMaxValue > playerMaxValue) {
+                        computerScore.textContent = parseInt(computerScore.textContent) + 1;
+                        messageArea.className = 'alert alert-danger';
+                        messageArea.textContent = 'Computador venceu esta rodada!';
+                    } else if (playerMaxValue > computerMaxValue) {
+                        playerScore.textContent = parseInt(playerScore.textContent) + 1;
+                        messageArea.className = 'alert alert-success';
+                        messageArea.textContent = 'Você venceu esta rodada!';
+                    } else {
+                        computerScore.textContent = parseInt(computerScore.textContent) + 1;
+                        messageArea.className = 'alert alert-warning';
+                        messageArea.textContent = 'Empate! Computador vence no desempate.';
+                    }
+
+                } catch (error) {
+                    console.error('Erro:', error);
+                    messageArea.className = 'alert alert-danger';
+                    messageArea.textContent = 'Erro ao jogar a rodada. Tente novamente.';
                 }
-            } catch (error) {
-                console.error('Erro ao distribuir cartas:', error);
             }
-        }
+
+            function criarElementoCarta(carta) {
+                const cartaDiv = document.createElement('div');
+                cartaDiv.className = 'playing-card flipped';
+                
+                cartaDiv.innerHTML = `
+                    <div class="playing-card-inner">
+                        <div class="playing-card-back">
+                            <div class="card-pattern"></div>
+                        </div>
+                        <div class="playing-card-front ${carta.naipe === '♥' || carta.naipe === '♦' ? 'card-red' : 'card-black'}">
+                            <div class="card-content">
+                                <div class="card-corner top-left">
+                                    <span class="card-value">${carta.valorSimbolico}</span>
+                                    <span class="card-suit">${carta.naipe}</span>
+                                </div>
+                                <div class="card-center">
+                                    <span class="card-big-symbol">${carta.naipe}</span>
+                                </div>
+                                <div class="card-corner bottom-right">
+                                    <span class="card-value">${carta.valorSimbolico}</span>
+                                    <span class="card-suit">${carta.naipe}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                return cartaDiv;
+            }
+
+            playButton.addEventListener('click', jogarRodada);
+        });
     </script>
 } 
