@@ -18,7 +18,6 @@ namespace BaralhoDeCartas.Services
             _baralhoApiClient = baralhoApiClient;
             _jogadorFactory = jogadorFactory;
             _jogoFactory = jogoFactory;
-
         }
 
         public async Task<IJogoMaiorCarta> CriarJogoMaiorCartaAsync(int numeroJogadores)
@@ -67,6 +66,45 @@ namespace BaralhoDeCartas.Services
         public async Task<IBaralho> FinalizarJogoAsync(string baralhoId)
         {
             return await _baralhoApiClient.RetornarCartasAoBaralhoAsync(baralhoId);
+        }
+        
+        public async Task<IBaralho> VerificarBaralhoAsync(string baralhoId)
+        {
+            try
+            {
+                // Primeiro, vamos tentar usar o método EmbaralharBaralho para obter informações do baralho
+                var baralho = await _baralhoApiClient.EmbaralharBaralhoAsync(baralhoId, true);
+                
+                // Se o baralho existir mas tiver poucas cartas, devolver todas ao baralho
+                if (baralho.QuantidadeDeCartasRestantes < 10) // Um número seguro para garantir cartas suficientes
+                {
+                    // Devolver todas as cartas ao baralho e embaralhar novamente
+                    await _baralhoApiClient.RetornarCartasAoBaralhoAsync(baralhoId);
+                    baralho = await _baralhoApiClient.EmbaralharBaralhoAsync(baralhoId, false);
+                }
+                
+                return baralho;
+            }
+            catch
+            {
+                try
+                {
+                    // Se ocorrer um erro (baralho não existe mais ou outro problema),
+                    // tente primeiro retornar as cartas, caso o baralho ainda exista
+                    await _baralhoApiClient.RetornarCartasAoBaralhoAsync(baralhoId);
+                    return await _baralhoApiClient.EmbaralharBaralhoAsync(baralhoId, false);
+                }
+                catch
+                {
+                    // Se ainda falhar, criar um novo baralho
+                    return await CriarNovoBaralhoAsync();
+                }
+            }
+        }
+        
+        public async Task<IBaralho> EmbaralharBaralhoAsync(string baralhoId, bool embaralharSomenteCartasRestantes)
+        {
+            return await _baralhoApiClient.EmbaralharBaralhoAsync(baralhoId, embaralharSomenteCartasRestantes);
         }
     }
 } 

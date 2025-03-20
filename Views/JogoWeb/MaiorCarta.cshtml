@@ -9,13 +9,10 @@
 <div class="jogo-container">
 	<h1 class="titulo-jogo">Jogo de Maior Carta</h1>
 
-	<div class="info-baralho">
-		<p>ID do Baralho: @Model.Baralho.BaralhoId</p>
-		<p>Cartas Restantes: @Model.Baralho.QuantidadeDeCartasRestantes</p>
-		<p>Status: @(Model.Baralho.EstaEmbaralhado ? "Embaralhado" : "Não Embaralhado")</p>
-		<div class="jogadores-contador">
-			<p>Número de Jogadores: <span class="badge bg-success jogadores-badge">@Model.Jogadores.Count</span></p>
+	<div class="info-baralho">		
+		<div class="jogadores-contador">			
 			<div class="jogadores-icones">
+				<p>Número de Jogadores: <span class="badge bg-success jogadores-badge">@Model.Jogadores.Count</span></p>
 				@for (int i = 0; i < Model.Jogadores.Count; i++)
 				{
 					<div class="jogador-icone @(i == 0 ? "computador" : "humano")" title="@(i == 0 ? "Computador" : "Jogador")">
@@ -104,18 +101,39 @@
 			const playerScore = document.getElementById('player-score');
 			const messageArea = document.getElementById('message-area');
 			const playButton = document.getElementById('play-button');
+            
+            // Variável para controlar se uma jogada está em andamento
+            let jogadaEmAndamento = false;
+            // Variável para armazenar o ID do baralho atual
+            let baralhoId = '@Model.Baralho.BaralhoId';
 
 			async function jogarRodada() {
+                // Evitar múltiplos cliques simultâneos
+                if (jogadaEmAndamento) {
+                    return;
+                }
+                
+                // Desabilitar o botão durante a jogada
+                playButton.disabled = true;
+                playButton.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Processando...';
+                jogadaEmAndamento = true;
+
 				try {
-					const response = await fetch(`/JogoWeb/DistribuirCartas?baralhoId=@Model.Baralho.BaralhoId&numeroJogadores=@Model.Jogadores.Count()`, {
+					const response = await fetch(`/JogoWeb/DistribuirCartas?baralhoId=${baralhoId}&numeroJogadores=@Model.Jogadores.Count()`, {
 						method: 'GET'
 					});
 
 					const result = await response.json();
 
 					if (!result.success) {
-						throw new Error(result.error);
+						throw new Error(result.error || "Erro desconhecido ao distribuir cartas");
 					}
+                    
+                    // Se um novo baralho foi criado, atualize o ID do baralho
+                    if (result.novoBaralho && result.baralhoId) {
+                        baralhoId = result.baralhoId;
+                        console.log('Novo baralho criado:', baralhoId);
+                    }
 
 					const [computador, jogador] = result.data;
 
@@ -203,7 +221,12 @@
 					console.error('Erro:', error);
 					messageArea.className = 'alert alert-danger';
 					messageArea.textContent = 'Erro ao jogar a rodada. Tente novamente.';
-				}
+				} finally {
+                    // Sempre reabilitar o botão após a conclusão, independentemente de sucesso ou erro
+                    playButton.disabled = false;
+                    playButton.innerHTML = '<i class="bi bi-play-circle me-2"></i>Jogar';
+                    jogadaEmAndamento = false;
+                }
 			}
 
 			playButton.addEventListener('click', jogarRodada);

@@ -9,5 +9,7 @@ namespace BaralhoDeCartas.Services.Interfaces
         Task<IJogador> DeterminarVencedorAsync(List<IJogador> jogadores);
         Task<IBaralho> FinalizarJogoAsync(string baralhoId);
         Task<IJogoMaiorCarta> CriarJogoMaiorCartaAsync(int numeroJogadores);
+        Task<IBaralho> VerificarBaralhoAsync(string baralhoId);
+        Task<IBaralho> EmbaralharBaralhoAsync(string baralhoId, bool embaralharSomenteCartasRestantes);
     }
 } 
