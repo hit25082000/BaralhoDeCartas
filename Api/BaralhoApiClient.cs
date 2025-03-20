@@ -36,7 +36,7 @@ namespace BaralhoDeCartas.Api
             return _baralhoFactory.CriarBaralho(baralhoResponse);
         }
 
-        public async Task<IBaralho> EmbaralharBaralhoAsync(string baralhoId, bool embaralharSomenteCartasRestantes)
+        public async Task<IBaralho> EmbaralharBaralhoAsync(string baralhoId, bool embaralharSomenteCartasRestantes = true)
         {
             if (string.IsNullOrEmpty(baralhoId))
             {
@@ -58,7 +58,7 @@ namespace BaralhoDeCartas.Api
 
             if (!baralhoResponse.Success)
             {
-                throw new HttpRequestException($"Falha ao comprar cartas");
+                throw new HttpRequestException($"Falha ao embaralhar cartas");
             }
 
             return _baralhoFactory.CriarBaralho(baralhoResponse);
@@ -71,7 +71,7 @@ namespace BaralhoDeCartas.Api
                 throw new ArgumentException("ID do baralho não pode ser nulo ou vazio", nameof(baralhoId));
             }
 
-            if (quantidade <= 0)
+            if (quantidade <= 0 )
             {
                 throw new ArgumentException("Quantidade de cartas deve ser maior que zero", nameof(quantidade));
             }
@@ -84,7 +84,7 @@ namespace BaralhoDeCartas.Api
 
             if (!cartasResponse.Success)
             {
-                throw new HttpRequestException($"Falha ao comprar cartas");
+                throw new HttpRequestException($"Falha ao comprar cartas "+ cartasResponse.Error);
             }
 
             return _cartaFactory.CriarCartas(cartasResponse);
@@ -103,6 +103,11 @@ namespace BaralhoDeCartas.Api
 
             var content = await response.Content.ReadAsStringAsync();
             var baralhoResponse = JsonSerializer.Deserialize<BaralhoResponse>(content);
+
+            if (!baralhoResponse.Success)
+            {
+                throw new HttpRequestException($"Falha ao retornar cartas ao baralho");
+            }
 
             return _baralhoFactory.CriarBaralho(baralhoResponse);
         }

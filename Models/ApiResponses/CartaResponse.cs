@@ -15,6 +15,9 @@ namespace BaralhoDeCartas.Models.ApiResponses
 
         [JsonPropertyName("remaining")]
         public int Remaining { get; set; }
+
+        [JsonPropertyName("error")]
+        public string Error { get; set; }
     }
 
     public class CartaListItemResponse
@@ -29,5 +32,8 @@ namespace BaralhoDeCartas.Models.ApiResponses
         public string Suit { get; set; }
         [JsonPropertyName("code")]
         public string Code { get; set; }
+
+        [JsonPropertyName("error")]
+        public int Error { get; set; }
     }
 }

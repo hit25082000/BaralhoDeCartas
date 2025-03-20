@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using BaralhoDeCartas.Models.Interfaces;
 using BaralhoDeCartas.Services.Interfaces;
 using BaralhoDeCartas.Models.DTOs;
+using Microsoft.AspNetCore.Http.HttpResults;
+using BaralhoDeCartas.Exceptions;
+using Microsoft.AspNetCore.Http;
 
 namespace BaralhoDeCartas.Controllers
 {
@@ -35,6 +38,11 @@ namespace BaralhoDeCartas.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(baralhoId))
+                {
+                    return BadRequest("ID do baralho não pode ser nulo ou vazio");
+                }
+
                 if (numeroJogadores <= 0)
                 {
                     return BadRequest("O número de jogadores deve ser maior que zero.");
@@ -43,6 +51,10 @@ namespace BaralhoDeCartas.Controllers
                 var jogadores = await _jogoService.DistribuirCartasAsync(baralhoId, numeroJogadores);
                 var jogadoresDTO = JogadorDTO.FromJogadores(jogadores);
                 return Ok(jogadoresDTO);
+            }
+            catch (ExternalServiceUnavailableException ex)
+            {
+                return StatusCode(503, "Serviço externo indisponível: " + ex.Message);
             }
             catch (Exception ex)
             {
@@ -75,6 +87,11 @@ namespace BaralhoDeCartas.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(baralhoId))
+                {
+                    throw new ArgumentException("ID do baralho não pode ser nulo ou vazio", nameof(baralhoId));
+                }
+
                 var resultado = await _jogoService.FinalizarJogoAsync(baralhoId);
                 return Ok(resultado);
             }
