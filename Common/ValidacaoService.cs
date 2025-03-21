@@ -90,5 +90,73 @@ namespace BaralhoDeCartas.Common
                 throw new InvalidOperationException($"O jogador {jogador.Nome} não pode comprar mais cartas.");
             }
         }
+
+        public static void ValidarCodigoCarta(ICarta carta)
+        {
+            if (carta == null)
+            {
+                throw new ArgumentNullException(nameof(carta), "A carta não pode ser nula");
+            }
+
+            if (string.IsNullOrEmpty(carta.Codigo))
+            {
+                throw new ArgumentException("O código da carta não pode ser nulo ou vazio");
+            }
+
+            if (string.IsNullOrEmpty(carta.ValorSimbolico))
+            {
+                throw new ArgumentException("O valor simbólico da carta não pode ser nulo ou vazio");
+            }
+
+            if (string.IsNullOrEmpty(carta.Naipe))
+            {
+                throw new ArgumentException("O naipe da carta não pode ser nulo ou vazio");
+            }
+
+            string valorSimbolico = carta.ValorSimbolico;
+            string naipe = carta.Naipe;
+            string codigo = carta.Codigo;
+
+            // Obtém a primeira letra do naipe (H para HEARTS, S para SPADES, etc.)
+            char letraNaipe = ObterLetraNaipe(naipe);
+
+            // O código esperado deve ser o valor simbólico seguido da letra do naipe
+            string codigoEsperado = valorSimbolico + letraNaipe;
+
+            if (codigo != codigoEsperado)
+            {
+                throw new ArgumentException(
+                    $"O código da carta '{codigo}' não corresponde ao valor simbólico '{valorSimbolico}' e naipe '{naipe}'. " +
+                    $"O código esperado seria '{codigoEsperado}'");
+            }
+        }
+
+        public static void ValidarCodigoCartas<T>(List<T> jogadores) where T : IJogador
+        {
+            if (jogadores == null)
+            {
+                throw new ArgumentNullException(nameof(jogadores), "A lista de jogadores não pode ser nula");
+            }
+
+            foreach (var jogador in jogadores)
+            {
+                foreach (var carta in jogador.Cartas)
+                {
+                    ValidarCodigoCarta(carta);
+                }
+            }
+        }
+
+        private static char ObterLetraNaipe(string naipe)
+        {
+            return naipe.ToUpper() switch
+            {
+                "HEARTS" => 'H',
+                "SPADES" => 'S',
+                "CLUBS" => 'C',
+                "DIAMONDS" => 'D',
+                _ => throw new ArgumentException($"Naipe desconhecido: {naipe}")
+            };
+        }
     }
 } 

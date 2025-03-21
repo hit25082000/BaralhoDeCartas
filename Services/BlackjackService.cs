@@ -32,6 +32,9 @@ namespace BaralhoDeCartas.Services
                 IBaralho baralho = await _baralhoApiClient.CriarNovoBaralhoAsync();
                 List<IJogadorDeBlackjack> jogadores = await IniciarRodadaAsync(baralho.BaralhoId, numeroJogadores);
 
+                // Validar a consistência do código de cada carta
+                ValidacaoService.ValidarCodigoCartas(jogadores);
+
                 baralho.QuantidadeDeCartasRestantes -= jogadores.Sum((jogador) => jogador.Cartas.Count());
 
                 return _jogoFactory.CriarJogoBlackJack(jogadores, baralho);
@@ -87,6 +90,9 @@ namespace BaralhoDeCartas.Services
                 
                 if (novaCarta != null)
                 {
+                    // Validar a consistência do código da nova carta
+                    ValidacaoService.ValidarCodigoCarta(novaCarta);
+                    
                     jogador.Cartas.Add(novaCarta);
                 }
 
@@ -99,6 +105,7 @@ namespace BaralhoDeCartas.Services
         public List<IJogadorDeBlackjack> DeterminarVencedoresAsync(List<IJogadorDeBlackjack> jogadores)
         {
             ValidacaoService.ValidarListaJogadores(jogadores);
+            ValidacaoService.ValidarCodigoCartas(jogadores);
 
             return ServiceExceptionHandler.HandleServiceException(() =>
             {

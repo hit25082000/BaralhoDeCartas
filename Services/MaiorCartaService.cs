@@ -28,6 +28,7 @@ namespace BaralhoDeCartas.Services
             ValidacaoService.ValidarListaJogadores(jogadores);
             ValidacaoService.ValidarJogadoresDuplicados(jogadores);
             ValidacaoService.ValidarCartasDuplicadas(jogadores);
+            ValidacaoService.ValidarCodigoCartas(jogadores);
         }
 
         public async Task<IJogoMaiorCarta> CriarJogoMaiorCartaAsync(int numeroJogadores)
@@ -38,6 +39,9 @@ namespace BaralhoDeCartas.Services
             {
                 IBaralho baralho = await _baralhoApiClient.CriarNovoBaralhoAsync();
                 List<IJogador> jogadores = await DistribuirCartasAsync(baralho.BaralhoId, numeroJogadores);
+
+                // Validar a consistência do código de cada carta
+                ValidacaoService.ValidarCodigoCartas(jogadores);
 
                 baralho.QuantidadeDeCartasRestantes -= jogadores.Sum((jogador) => jogador.Cartas.Count());
 
@@ -85,10 +89,7 @@ namespace BaralhoDeCartas.Services
             ValidarListaJogadores(jogadores);
 
             return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
-            {
-                // Verificar se há cartas duplicadas antes de determinar o vencedor
-                ValidacaoService.ValidarCartasDuplicadas(jogadores);
-                
+            {                
                 return jogadores
                     .OrderByDescending(j => j.ObterCartaDeMaiorValor()?.Valor ?? 0)
                     .FirstOrDefault();
