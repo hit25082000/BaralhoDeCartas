@@ -3,6 +3,8 @@ using BaralhoDeCartas.Factory;
 using BaralhoDeCartas.Factory.Interfaces;
 using BaralhoDeCartas.Models.Interfaces;
 using BaralhoDeCartas.Services.Interfaces;
+using BaralhoDeCartas.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace BaralhoDeCartas.Services
 {
@@ -11,8 +13,8 @@ namespace BaralhoDeCartas.Services
         private readonly IBaralhoApiClient _baralhoApiClient;
         private readonly IJogadorFactory _jogadorFactory;
         private readonly IJogoFactory _jogoFactory;
-        private readonly ILogger<MaiorCartaService> _logger;
         private const int CARTAS_POR_JOGADOR = 5;
+        private const int MINIMO_CARTAS_BARALHO = 10;
 
         public MaiorCartaService(IBaralhoApiClient baralhoApiClient, IJogadorFactory jogadorFactory, IJogoFactory jogoFactory)
         {
@@ -21,91 +23,206 @@ namespace BaralhoDeCartas.Services
             _jogoFactory = jogoFactory;
         }
 
+        private void ValidarNumeroJogadores(int numeroJogadores)
+        {
+            if (numeroJogadores <= 0)
+            {
+                throw new ArgumentException("O número de jogadores deve ser maior que zero");
+            }
+        }
+
+        private void ValidarBaralhoId(string baralhoId)
+        {
+            if (string.IsNullOrEmpty(baralhoId))
+            {
+                throw new ArgumentException("O ID do baralho não pode ser nulo ou vazio");
+            }
+        }
+
+        private void ValidarListaJogadores(List<IJogador> jogadores)
+        {
+            if (jogadores == null || !jogadores.Any())
+            {
+                throw new ArgumentException("A lista de jogadores não pode estar vazia");
+            }
+        }
+
+        private void ValidarQuantidadeCartasBaralho(IBaralho baralho)
+        {
+            if (baralho.QuantidadeDeCartasRestantes < MINIMO_CARTAS_BARALHO)
+            {
+                throw new InvalidOperationException("Quantidade insuficiente de cartas no baralho");
+            }
+        }
+
         public async Task<IJogoMaiorCarta> CriarJogoMaiorCartaAsync(int numeroJogadores)
         {
-            IBaralho baralho = await _baralhoApiClient.CriarNovoBaralhoAsync();
-            List<IJogador> jogadores = await DistribuirCartasAsync(baralho.BaralhoId, numeroJogadores);
+            ValidarNumeroJogadores(numeroJogadores);
 
-            baralho.QuantidadeDeCartasRestantes -= jogadores.Sum((jogador) => jogador.Cartas.Count());
+            try
+            {
+                IBaralho baralho = await _baralhoApiClient.CriarNovoBaralhoAsync();
+                List<IJogador> jogadores = await DistribuirCartasAsync(baralho.BaralhoId, numeroJogadores);
 
-            return _jogoFactory.CriarJogoMaiorCarta(jogadores, baralho);
+                baralho.QuantidadeDeCartasRestantes -= jogadores.Sum((jogador) => jogador.Cartas.Count());
+
+                return _jogoFactory.CriarJogoMaiorCarta(jogadores, baralho);
+            }
+            catch (ExternalServiceUnavailableException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         public async Task<IBaralho> CriarNovoBaralhoAsync()
         {
-            return await _baralhoApiClient.CriarNovoBaralhoAsync();
+            try
+            {
+                return await _baralhoApiClient.CriarNovoBaralhoAsync();
+            }
+            catch (ExternalServiceUnavailableException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         public async Task<List<IJogador>> DistribuirCartasAsync(string baralhoId, int numeroJogadores)
         {
-            List<IJogador> jogadores = new List<IJogador>();
-            int totalCartas = numeroJogadores * CARTAS_POR_JOGADOR;
+            ValidarBaralhoId(baralhoId);
+            ValidarNumeroJogadores(numeroJogadores);
 
-            List<ICarta> todasAsCartas = await _baralhoApiClient.ComprarCartasAsync(baralhoId, totalCartas);
-            
-            for (int i = 0; i < numeroJogadores; i++)
+            try
             {
-                List<ICarta> cartasDoJogador = todasAsCartas.Skip(i * CARTAS_POR_JOGADOR).Take(CARTAS_POR_JOGADOR).ToList();
+                List<IJogador> jogadores = new List<IJogador>();
+                int totalCartas = numeroJogadores * CARTAS_POR_JOGADOR;
 
-                int jogadorId = i + 1;
-                string nomeJogador = $"Jogador {jogadorId}";
+                List<ICarta> todasAsCartas = await _baralhoApiClient.ComprarCartasAsync(baralhoId, totalCartas);
+                
+                for (int i = 0; i < numeroJogadores; i++)
+                {
+                    List<ICarta> cartasDoJogador = todasAsCartas.Skip(i * CARTAS_POR_JOGADOR).Take(CARTAS_POR_JOGADOR).ToList();
 
-                IJogador jogador = _jogadorFactory.CriarJogador(cartasDoJogador,jogadorId,nomeJogador);               
-                jogadores.Add(jogador);
+                    int jogadorId = i + 1;
+                    string nomeJogador = $"Jogador {jogadorId}";
+
+                    IJogador jogador = _jogadorFactory.CriarJogador(cartasDoJogador, jogadorId, nomeJogador);               
+                    jogadores.Add(jogador);
+                }
+
+                return jogadores;
             }
-
-            return jogadores;
+            catch (BaralhoNotFoundException)
+            {
+                throw;
+            }
+            catch (ExternalServiceUnavailableException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         public async Task<IJogador> DeterminarVencedorAsync(List<IJogador> jogadores)
         {
-            return jogadores
-                .OrderByDescending(j => j.ObterCartaDeMaiorValor()?.Valor ?? 0)
-                .FirstOrDefault();
+            ValidarListaJogadores(jogadores);
+
+            try
+            {
+                return jogadores
+                    .OrderByDescending(j => j.ObterCartaDeMaiorValor()?.Valor ?? 0)
+                    .FirstOrDefault();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         public async Task<IBaralho> FinalizarJogoAsync(string baralhoId)
         {
-            return await _baralhoApiClient.RetornarCartasAoBaralhoAsync(baralhoId);
+            ValidarBaralhoId(baralhoId);
+
+            try
+            {
+                return await _baralhoApiClient.RetornarCartasAoBaralhoAsync(baralhoId);
+            }
+            catch (BaralhoNotFoundException)
+            {
+                throw;
+            }
+            catch (ExternalServiceUnavailableException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
         
         public async Task<IBaralho> VerificarBaralhoAsync(string baralhoId)
         {
+            ValidarBaralhoId(baralhoId);
+
             try
             {
-                // Primeiro, vamos tentar usar o método EmbaralharBaralho para obter informações do baralho
                 var baralho = await _baralhoApiClient.EmbaralharBaralhoAsync(baralhoId, true);
                 
-                // Se o baralho existir mas tiver poucas cartas, devolver todas ao baralho
-                if (baralho.QuantidadeDeCartasRestantes < 10) // Um número seguro para garantir cartas suficientes
+                ValidarQuantidadeCartasBaralho(baralho);
+                
+                if (baralho.QuantidadeDeCartasRestantes < MINIMO_CARTAS_BARALHO)
                 {
-                    // Devolver todas as cartas ao baralho e embaralhar novamente
                     await _baralhoApiClient.RetornarCartasAoBaralhoAsync(baralhoId);
                     baralho = await _baralhoApiClient.EmbaralharBaralhoAsync(baralhoId, false);
                 }
                 
                 return baralho;
             }
-            catch
+            catch (BaralhoNotFoundException)
             {
-                try
-                {
-                    // Se ocorrer um erro (baralho não existe mais ou outro problema),
-                    // tente primeiro retornar as cartas, caso o baralho ainda exista
-                    await _baralhoApiClient.RetornarCartasAoBaralhoAsync(baralhoId);
-                    return await _baralhoApiClient.EmbaralharBaralhoAsync(baralhoId, false);
-                }
-                catch
-                {
-                    // Se ainda falhar, criar um novo baralho
-                    return await CriarNovoBaralhoAsync();
-                }
+                throw;
+            }
+            catch (ExternalServiceUnavailableException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                throw;
             }
         }
         
         public async Task<IBaralho> EmbaralharBaralhoAsync(string baralhoId, bool embaralharSomenteCartasRestantes)
         {
-            return await _baralhoApiClient.EmbaralharBaralhoAsync(baralhoId, embaralharSomenteCartasRestantes);
+            ValidarBaralhoId(baralhoId);
+
+            try
+            {
+                return await _baralhoApiClient.EmbaralharBaralhoAsync(baralhoId, embaralharSomenteCartasRestantes);
+            }
+            catch (BaralhoNotFoundException)
+            {
+                throw;
+            }
+            catch (ExternalServiceUnavailableException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 } 

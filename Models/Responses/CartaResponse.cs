@@ -2,7 +2,7 @@
 
 namespace BaralhoDeCartas.Models.ApiResponses
 {
-    public class CartasResponse
+    public class CartasResponse : IApiResponse
     {
         [JsonPropertyName("success")]
         public bool Success { get; set; }

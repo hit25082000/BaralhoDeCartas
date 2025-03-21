@@ -23,13 +23,11 @@ namespace BaralhoDeCartas.Controllers
 
         public async Task<IActionResult> Index(string jogo, int numeroJogadores)
         {
-            // Garantir que haja pelo menos 2 jogadores (computador + 1 humano)
             if (numeroJogadores < 2)
             {
                 numeroJogadores = 2;
             }
             
-            // Limitar o número máximo de jogadores para 6 para garantir boa experiência de usuário
             if (numeroJogadores > 6)
             {
                 numeroJogadores = 6;
@@ -67,16 +65,12 @@ namespace BaralhoDeCartas.Controllers
             {
                 try
                 {
-                    // Obtenha informações sobre o baralho
                     baralho = await _maiorCartaService.VerificarBaralhoAsync(baralhoId);
                     
-                    // Se for uma nova partida ou o baralho estiver com poucas cartas, embaralhe-o
                     if (baralho.QuantidadeDeCartasRestantes < numeroJogadores * 5) // 5 cartas por jogador
                     {
-                        // Devolver todas as cartas ao baralho
                         baralho = await _maiorCartaService.FinalizarJogoAsync(baralhoId);
                         
-                        // Embaralhar o baralho todo
                         baralho = await _maiorCartaService.EmbaralharBaralhoAsync(baralhoId, false);
                     }
                     
@@ -103,16 +97,13 @@ namespace BaralhoDeCartas.Controllers
                 {
                     tentativas++;
                     
-                    // Se for erro de "Falha ao comprar cartas" ou estiver na última tentativa
                     if (ex.Message.Contains("Falha ao comprar cartas") || tentativas >= maxTentativas)
                     {
                         try
                         {
-                            // Criar um novo baralho ao invés de tentar consertar o atual
                             baralho = await _maiorCartaService.CriarNovoBaralhoAsync();
-                            baralhoId = baralho.BaralhoId; // Atualizar o ID do baralho
+                            baralhoId = baralho.BaralhoId; 
                             
-                            // Tentar novamente com o novo baralho
                             jogadores = await _maiorCartaService.DistribuirCartasAsync(baralhoId, numeroJogadores);
                             
                             return Json(new { 
@@ -134,17 +125,14 @@ namespace BaralhoDeCartas.Controllers
                         }
                         catch (Exception innerEx)
                         {
-                            // Se falhar mesmo com o novo baralho, retorne o erro
                             return Json(new { success = false, error = $"Erro após criar novo baralho: {innerEx.Message}" });
                         }
                     }
                     
-                    // Se não for o último erro, continue tentando
                     continue;
                 }
             }
             
-            // Se chegou aqui, esgotou as tentativas
             return Json(new { success = false, error = "Não foi possível distribuir as cartas após várias tentativas." });
         }
 

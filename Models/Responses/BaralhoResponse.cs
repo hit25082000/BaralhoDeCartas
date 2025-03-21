@@ -2,10 +2,13 @@
 
 namespace BaralhoDeCartas.Models.ApiResponses
 {
-    public class BaralhoResponse
+    public class BaralhoResponse : IApiResponse
     {
         [JsonPropertyName("success")]
         public bool Success { get; set; }
+
+        [JsonPropertyName("error")]
+        public string Error { get; set; }
 
         [JsonPropertyName("deck_id")]
         public string DeckId { get; set; }

@@ -3,6 +3,7 @@ using BaralhoDeCartas.Api.Interfaces;
 using BaralhoDeCartas.Factory.Interfaces;
 using BaralhoDeCartas.Models.ApiResponses;
 using BaralhoDeCartas.Models.Interfaces;
+using BaralhoDeCartas.Exceptions;
 
 namespace BaralhoDeCartas.Api
 {
@@ -11,6 +12,7 @@ namespace BaralhoDeCartas.Api
         private readonly HttpClient _httpClient;
         private readonly IBaralhoFactory _baralhoFactory;
         private readonly ICartaFactory _cartaFactory;
+
         private const string BaseUrl = "https://deckofcardsapi.com/api/deck";
 
         public BaralhoApiClient(HttpClient httpClient, IBaralhoFactory baralhoFactory, ICartaFactory cartaFactory)
@@ -22,18 +24,20 @@ namespace BaralhoDeCartas.Api
 
         public async Task<IBaralho> CriarNovoBaralhoAsync()
         {
-            var response = await _httpClient.GetAsync($"{BaseUrl}/new/shuffle/");
-            response.EnsureSuccessStatusCode();
-
-            string content = await response.Content.ReadAsStringAsync();
-            var baralhoResponse = JsonSerializer.Deserialize<BaralhoResponse>(content);
-
-            if (!baralhoResponse.Success)
+            try
             {
-                throw new HttpRequestException("Falha ao criar novo baralho");
-            }
+                var response = await _httpClient.GetAsync($"{BaseUrl}/new/shuffle/");
+                response.EnsureSuccessStatusCode();
 
-            return _baralhoFactory.CriarBaralho(baralhoResponse);
+                var baralhoResponse = await DeserializeResponseAsync<BaralhoResponse>(response);
+                ValidateResponse(baralhoResponse);
+
+                return _baralhoFactory.CriarBaralho(baralhoResponse);
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                throw new BaralhoNotFoundException("Baralho não encontrado", ex);
+            }
         }
 
         public async Task<IBaralho> EmbaralharBaralhoAsync(string baralhoId, bool embaralharSomenteCartasRestantes = true)
@@ -43,25 +47,27 @@ namespace BaralhoDeCartas.Api
                 throw new ArgumentException("ID do baralho não pode ser nulo ou vazio", nameof(baralhoId));
             }
 
-            string url = $"{BaseUrl}/{baralhoId}/shuffle/";
-
-            if (embaralharSomenteCartasRestantes)
+            try
             {
-                url = $"{BaseUrl}/{baralhoId}/shuffle/?remaining=true";
+                string url = $"{BaseUrl}/{baralhoId}/shuffle/";
+
+                if (embaralharSomenteCartasRestantes)
+                {
+                    url = $"{BaseUrl}/{baralhoId}/shuffle/?remaining=true";
+                }
+
+                var response = await _httpClient.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+
+                var baralhoResponse = await DeserializeResponseAsync<BaralhoResponse>(response);
+                ValidateResponse(baralhoResponse);
+
+                return _baralhoFactory.CriarBaralho(baralhoResponse);
             }
-
-            var response = await _httpClient.GetAsync(url);
-            response.EnsureSuccessStatusCode();
-
-            var content = await response.Content.ReadAsStringAsync();
-            var baralhoResponse = JsonSerializer.Deserialize<BaralhoResponse>(content);
-
-            if (!baralhoResponse.Success)
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                throw new HttpRequestException($"Falha ao embaralhar cartas");
+                throw new BaralhoNotFoundException($"Baralho {baralhoId} não encontrado", ex);
             }
-
-            return _baralhoFactory.CriarBaralho(baralhoResponse);
         }
 
         public async Task<List<ICarta>> ComprarCartasAsync(string baralhoId, int quantidade)
@@ -76,18 +82,20 @@ namespace BaralhoDeCartas.Api
                 throw new ArgumentException("Quantidade de cartas deve ser maior que zero", nameof(quantidade));
             }
 
-            var response = await _httpClient.GetAsync($"{BaseUrl}/{baralhoId}/draw/?count={quantidade}");
-            response.EnsureSuccessStatusCode();
-
-            var content = await response.Content.ReadAsStringAsync();
-            var cartasResponse = JsonSerializer.Deserialize<CartasResponse>(content);
-
-            if (!cartasResponse.Success)
+            try
             {
-                throw new HttpRequestException($"Falha ao comprar cartas "+ cartasResponse.Error);
-            }
+                var response = await _httpClient.GetAsync($"{BaseUrl}/{baralhoId}/draw/?count={quantidade}");
+                response.EnsureSuccessStatusCode();
 
-            return _cartaFactory.CriarCartas(cartasResponse);
+                var cartasResponse = await DeserializeResponseAsync<CartasResponse>(response);
+                ValidateResponse(cartasResponse);
+
+                return _cartaFactory.CriarCartas(cartasResponse);
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                throw new BaralhoNotFoundException($"Baralho {baralhoId} não encontrado", ex);
+            }
         }
 
         public async Task<IBaralho> RetornarCartasAoBaralhoAsync(string baralhoId)
@@ -97,19 +105,39 @@ namespace BaralhoDeCartas.Api
                 throw new ArgumentException("ID do baralho não pode ser nulo ou vazio", nameof(baralhoId));
             }
 
-            var response = await _httpClient.GetAsync($"{BaseUrl}/{baralhoId}/return/");
-
-            response.EnsureSuccessStatusCode();
-
-            var content = await response.Content.ReadAsStringAsync();
-            var baralhoResponse = JsonSerializer.Deserialize<BaralhoResponse>(content);
-
-            if (!baralhoResponse.Success)
+            try
             {
-                throw new HttpRequestException($"Falha ao retornar cartas ao baralho");
-            }
+                var response = await _httpClient.GetAsync($"{BaseUrl}/{baralhoId}/return/");
+                response.EnsureSuccessStatusCode();
 
-            return _baralhoFactory.CriarBaralho(baralhoResponse);
+                var baralhoResponse = await DeserializeResponseAsync<BaralhoResponse>(response);
+                ValidateResponse(baralhoResponse);
+
+                return _baralhoFactory.CriarBaralho(baralhoResponse);
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                throw new BaralhoNotFoundException($"Baralho {baralhoId} não encontrado", ex);
+            }
+        }
+
+        private async Task<T> DeserializeResponseAsync<T>(HttpResponseMessage response)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<T>(content);
+        }
+
+        private void ValidateResponse<T>(T response) where T : IApiResponse
+        {
+            if (!response.Success)
+            {
+                if (response is CartasResponse cartasResponse && 
+                    cartasResponse.Error?.Contains("deck_id") == true)
+                {
+                    throw new BaralhoNotFoundException("Baralho não encontrado");
+                }
+                throw new HttpRequestException($"Falha na operação: {response.Error}");
+            }
         }
     }
 }

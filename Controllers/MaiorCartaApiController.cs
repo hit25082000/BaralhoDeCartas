@@ -5,6 +5,8 @@ using BaralhoDeCartas.Models.DTOs;
 using Microsoft.AspNetCore.Http.HttpResults;
 using BaralhoDeCartas.Exceptions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace BaralhoDeCartas.Controllers
 {
@@ -27,77 +29,97 @@ namespace BaralhoDeCartas.Controllers
                 var baralho = await _jogoService.CriarNovoBaralhoAsync();
                 return Ok(baralho);
             }
+            catch (ExternalServiceUnavailableException ex)
+            {
+                return StatusCode(503, new { erro = "Serviço temporariamente indisponível", detalhes = ex.Message });
+            }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Erro ao iniciar o jogo: {ex.Message}");
+                return StatusCode(500, new { erro = "Ocorreu um erro interno no servidor" });
             }
         }
 
         [HttpPost("{baralhoId}/distribuir/{numeroJogadores}")]
         public async Task<ActionResult<List<JogadorDTO>>> DistribuirCartasAsync(string baralhoId, int numeroJogadores)
         {
+            if (string.IsNullOrEmpty(baralhoId))
+            {
+                return BadRequest(new { erro = "ID do baralho não pode ser nulo ou vazio" });
+            }
+
+            if (numeroJogadores <= 0)
+            {
+                return BadRequest(new { erro = "O número de jogadores deve ser maior que zero" });
+            }
+
             try
             {
-                if (string.IsNullOrEmpty(baralhoId))
-                {
-                    return BadRequest("ID do baralho não pode ser nulo ou vazio");
-                }
-
-                if (numeroJogadores <= 0)
-                {
-                    return BadRequest("O número de jogadores deve ser maior que zero.");
-                }
-
                 var jogadores = await _jogoService.DistribuirCartasAsync(baralhoId, numeroJogadores);
                 var jogadoresDTO = JogadorDTO.FromJogadores(jogadores);
                 return Ok(jogadoresDTO);
             }
+            catch (BaralhoNotFoundException ex)
+            {
+                return NotFound(new { erro = "Baralho não encontrado", detalhes = ex.Message });
+            }
             catch (ExternalServiceUnavailableException ex)
             {
-                return StatusCode(503, "Serviço externo indisponível: " + ex.Message);
+                return StatusCode(503, new { erro = "Serviço temporariamente indisponível", detalhes = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Erro ao distribuir as cartas: {ex.Message}");
+                return StatusCode(500, new { erro = "Ocorreu um erro interno no servidor" });
             }
         }
 
-        [HttpPost("/vencedor")]
+        [HttpPost("vencedor")]
         public async Task<ActionResult<JogadorDTO>> ObterVencedorAsync([FromBody] List<JogadorDTO> jogadoresDTO)
         {
+            if (jogadoresDTO == null || jogadoresDTO.Count == 0)
+            {
+                return BadRequest(new { erro = "A lista de jogadores não pode estar vazia" });
+            }
+
             try
             {
-                if (jogadoresDTO == null || jogadoresDTO.Count == 0)
-                {
-                    return BadRequest(new { erro = "A lista de jogadores não pode estar vazia." });
-                }
-
                 var jogadores = JogadorDTO.ToJogadores(jogadoresDTO);
                 var vencedor = await _jogoService.DeterminarVencedorAsync(jogadores);
                 return Ok(new JogadorDTO(vencedor));
             }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { erro = "Não foi possível determinar o vencedor", detalhes = ex.Message });
+            }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Erro ao determinar o vencedor: {ex.Message}");
+                return StatusCode(500, new { erro = "Ocorreu um erro interno no servidor" });
             }
         }
 
         [HttpPost("{baralhoId}/finalizar")]
-        public async Task<ActionResult<bool>> FinalizarJogosync(string baralhoId)
+        public async Task<ActionResult<bool>> FinalizarJogoAsync(string baralhoId)
         {
+            if (string.IsNullOrEmpty(baralhoId))
+            {
+                return BadRequest(new { erro = "ID do baralho não pode ser nulo ou vazio" });
+            }
+
             try
             {
-                if (string.IsNullOrEmpty(baralhoId))
-                {
-                    throw new ArgumentException("ID do baralho não pode ser nulo ou vazio", nameof(baralhoId));
-                }
-
                 var resultado = await _jogoService.FinalizarJogoAsync(baralhoId);
                 return Ok(resultado);
             }
+            catch (BaralhoNotFoundException ex)
+            {
+                return NotFound(new { erro = "Baralho não encontrado", detalhes = ex.Message });
+            }
+            catch (ExternalServiceUnavailableException ex)
+            {
+                return StatusCode(503, new { erro = "Serviço temporariamente indisponível", detalhes = ex.Message });
+            }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Erro ao finalizar o jogo: {ex.Message}");
+                return StatusCode(500, new { erro = "Ocorreu um erro interno no servidor" });
             }
         }
     }
