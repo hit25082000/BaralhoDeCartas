@@ -8,24 +8,7 @@
             <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInDown">Escolha seu Jogo</h1>
             <p class="lead text-muted animate__animated animate__fadeInUp">Selecione um dos nossos jogos clássicos e comece a diversão!</p>
         </div>
-    </div>
-
-    <div class="row justify-content-center mb-4">
-        <div class="col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title text-center mb-3">Configuração do Jogo</h5>
-                    <div class="form-group">
-                        <label for="numeroJogadores" class="form-label">Número de Jogadores (2-6):</label>
-                        <input type="number" class="form-control" id="numeroJogadores" min="2" max="6" value="2">
-                        <div class="invalid-feedback">
-                            O número de jogadores deve estar entre 2 e 6.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    </div>  
 
     <div class="row g-4">
         <!-- Maior Carta -->
@@ -241,34 +224,14 @@
                     this.querySelector('.game-card-inner').style.transform = 'rotateY(0)';
                 });
             });
-
-            // Validação do input de número de jogadores
-            const numeroJogadoresInput = document.getElementById('numeroJogadores');
-            numeroJogadoresInput.addEventListener('input', function() {
-                const value = parseInt(this.value);
-                const isValid = value >= 2 && value <= 6;
-                
-                if (!isValid) {
-                    this.classList.add('is-invalid');
-                } else {
-                    this.classList.remove('is-invalid');
-                }
-            });
+            
         });
 
-        function iniciarJogo(tipoJogo) {
-            const numeroJogadores = document.getElementById('numeroJogadores').value;
-            const numeroJogadoresInt = parseInt(numeroJogadores);
-
-            if (numeroJogadoresInt < 2 || numeroJogadoresInt > 6) {
-                alert('Por favor, selecione um número válido de jogadores (2-6)');
-                return;
-            }
-
+        function iniciarJogo(tipoJogo) {    
             if (tipoJogo === 'blackjack') {
-                window.location.href = `/Jogos/Blackjack?numeroJogadores=${numeroJogadores}`;
+                window.location.href = `/Jogos/Blackjack`;
             } else if (tipoJogo === 'maiorcarta') {
-                window.location.href = `/JogoWeb/Index?jogo=maiorcarta&numeroJogadores=${numeroJogadores}`;
+                window.location.href = `/JogoWeb/EscolherJogador`;
             }
         }
     </script>

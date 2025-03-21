@@ -27,7 +27,7 @@ namespace BaralhoDeCartas.Controllers
             {
                 numeroJogadores = 2;
             }
-            
+
             if (numeroJogadores > 6)
             {
                 numeroJogadores = 6;
@@ -43,13 +43,50 @@ namespace BaralhoDeCartas.Controllers
                 case "maiorcarta":
                     var jogoMaiorCarta = await _maiorCartaService.CriarJogoMaiorCartaAsync(numeroJogadores);
                     return View("MaiorCarta", jogoMaiorCarta);
-                
+
                 case "blackjack":
                     var jogoBlackjack = await _blackjackService.CriarJogoBlackJackAsync(numeroJogadores);
                     return View("Blackjack", jogoBlackjack);
-                
+
                 default:
                     return RedirectToAction("Index", "Jogos");
+            }
+        }
+
+        public IActionResult EscolherJogador()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> IniciarMaiorCarta(int numeroJogadores)
+        {
+            try
+            {
+                if (numeroJogadores < 2)
+                {
+                    numeroJogadores = 2;
+                }
+                
+                if (numeroJogadores > 6)
+                {
+                    numeroJogadores = 6;
+                }
+
+                var jogoMaiorCarta = await _maiorCartaService.CriarJogoMaiorCartaAsync(numeroJogadores);
+                
+                return Json(new { 
+                    success = true, 
+                    baralho = new {
+                        baralhoId = jogoMaiorCarta.Baralho.BaralhoId,
+                        quantidadeDeCartasRestantes = jogoMaiorCarta.Baralho.QuantidadeDeCartasRestantes,
+                        estaEmbaralhado = jogoMaiorCarta.Baralho.EstaEmbaralhado
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = ex.Message });
             }
         }
 
@@ -74,12 +111,14 @@ namespace BaralhoDeCartas.Controllers
                         baralho = await _maiorCartaService.EmbaralharBaralhoAsync(baralhoId, false);
                     }
                     
-                    // Agora tente distribuir as cartas
                     jogadores = await _maiorCartaService.DistribuirCartasAsync(baralhoId, numeroJogadores);
                     
-                    // Se chegou aqui, tudo funcionou
                     return Json(new { 
                         success = true, 
+                        baralho = new {
+                            quantidadeDeCartasRestantes = baralho.QuantidadeDeCartasRestantes,
+                            estaEmbaralhado = baralho.EstaEmbaralhado
+                        },
                         data = jogadores.Select(j => new {
                             id = j.JogadorId,
                             nome = j.Nome,
@@ -110,6 +149,10 @@ namespace BaralhoDeCartas.Controllers
                                 success = true,
                                 novoBaralho = true,
                                 baralhoId = baralhoId,
+                                baralho = new {
+                                    quantidadeDeCartasRestantes = baralho.QuantidadeDeCartasRestantes,
+                                    estaEmbaralhado = baralho.EstaEmbaralhado
+                                },
                                 data = jogadores.Select(j => new {
                                     id = j.JogadorId,
                                     nome = j.Nome,
