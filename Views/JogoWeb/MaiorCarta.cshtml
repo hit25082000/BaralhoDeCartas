@@ -252,14 +252,12 @@
                     if (isComputador) {
                         messageArea.className = 'alert alert-danger';
                         messageArea.textContent = 'Computador venceu esta rodada!';
-                        scores['computer']++;
+                        scores['computer'] = (scores['computer'] || 0) + 1;
                         computerScore.textContent = scores['computer'];
                     } else {
                         messageArea.className = 'alert alert-success';
                         messageArea.textContent = `${vencedor.nome} venceu esta rodada!`;
                         
-                        // Correto: Usar o ID do jogador diretamente para encontrar o elemento score
-                        // Importante: Verificar o elemento HTML na página para garantir o ID correto
                         const playerScoreId = `player-score-${vencedorId}`;
                         console.log(`Procurando elemento de pontuação: #${playerScoreId}`);
                         

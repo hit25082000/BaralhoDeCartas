@@ -227,7 +227,7 @@ namespace BaralhoDeCartas.Controllers
                     {
                         id = vencedor.JogadorId,
                         nome = vencedor.Nome,
-                        isComputador = vencedor.JogadorId == 1
+                        isComputador = vencedor.JogadorId == 0 // O computador é sempre o jogador 0
                     }
                 });
             }
