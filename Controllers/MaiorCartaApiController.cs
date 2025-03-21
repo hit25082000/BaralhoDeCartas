@@ -10,11 +10,11 @@ namespace BaralhoDeCartas.Controllers
     [Route("api/[controller]")]
     public class MaiorCartaApiController : ControllerBase
     {
-        private readonly IMaiorCartaService _jogoService;
+        private readonly IMaiorCartaService _maiorCartaService;
 
         public MaiorCartaApiController(IMaiorCartaService jogoService)
         {
-            _jogoService = jogoService;
+            _maiorCartaService = jogoService;
         }
 
         [HttpGet("iniciar")]
@@ -22,12 +22,12 @@ namespace BaralhoDeCartas.Controllers
         {
             try
             {
-                var baralho = await _jogoService.CriarNovoBaralhoAsync();
+                var baralho = await _maiorCartaService.CriarNovoBaralhoAsync();
                 return Ok(baralho);
             }
             catch (Exception ex)
             {
-                return new ActionResult<IBaralho>(ExceptionHandler.HandleException(ex));
+                return ExceptionHandler.HandleException(ex);
             }
         }
 
@@ -36,13 +36,13 @@ namespace BaralhoDeCartas.Controllers
         {
             try
             {
-                var jogadores = await _jogoService.DistribuirCartasAsync(baralhoId, numeroJogadores);
+                var jogadores = await _maiorCartaService.DistribuirCartasAsync(baralhoId, numeroJogadores);
                 var jogadoresDTO = JogadorDTO.FromJogadores(jogadores);
                 return Ok(jogadoresDTO); 
             }
             catch (Exception ex)
             {
-                return new ActionResult<List<JogadorDTO>>(ExceptionHandler.HandleException(ex));
+                return ExceptionHandler.HandleException(ex);
             }
         }
 
@@ -52,12 +52,12 @@ namespace BaralhoDeCartas.Controllers
             try
             {
                 var jogadores = JogadorDTO.ToJogadores(jogadoresDTO);
-                var vencedor = await _jogoService.DeterminarVencedorAsync(jogadores);
+                var vencedor = await _maiorCartaService.DeterminarVencedorAsync(jogadores);
                 return Ok(vencedor);
             }
             catch (Exception ex)
             {
-                return new ActionResult<JogadorDTO>(ExceptionHandler.HandleException(ex));
+                return ExceptionHandler.HandleException(ex);
             }
         }
 
@@ -66,12 +66,12 @@ namespace BaralhoDeCartas.Controllers
         {
             try
             {
-                var baralho = await _jogoService.FinalizarJogoAsync(baralhoId);
+                var baralho = await _maiorCartaService.FinalizarJogoAsync(baralhoId);
                 return Ok(baralho);
             }
             catch (Exception ex)
             {
-                return new ActionResult<bool>(ExceptionHandler.HandleException(ex));
+                return ExceptionHandler.HandleException(ex);
             }
         }
     }

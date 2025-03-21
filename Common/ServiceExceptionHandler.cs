@@ -10,21 +10,21 @@ namespace BaralhoDeCartas.Common
             {
                 return await action();
             }
-            catch (BaralhoNotFoundException)
+            catch (BaralhoNotFoundException ex)
             {
-                throw;
+                throw new InvalidOperationException("O baralho não foi encontrado", ex);
             }
-            catch (ExternalServiceUnavailableException)
+            catch (InvalidOperationException ex)
             {
-                throw;
+                throw new InvalidOperationException("A operação não é valida: ", ex);
             }
-            catch (InvalidOperationException)
+            catch (ArgumentException ex)
             {
-                throw;
+                throw new ArgumentException("Não foi possivel conectar ao host, verifique a conexão com a internet ", ex);
             }
-            catch (ArgumentException)
+            catch (HttpRequestException ex)
             {
-                throw;
+                throw new ExternalServiceUnavailableException("Não foi possivel conectar ao host, verifique a conexão com a internet");
             }
             catch (Exception ex)
             {

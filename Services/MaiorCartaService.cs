@@ -23,41 +23,16 @@ namespace BaralhoDeCartas.Services
             _jogoFactory = jogoFactory;
         }
 
-        private void ValidarNumeroJogadores(int numeroJogadores)
-        {
-            if (numeroJogadores <= 0)
-            {
-                throw new ArgumentException("O número de jogadores deve ser maior que zero");
-            }
-        }
-
-        private void ValidarBaralhoId(string baralhoId)
-        {
-            if (string.IsNullOrEmpty(baralhoId))
-            {
-                throw new ArgumentException("O ID do baralho não pode ser nulo ou vazio");
-            }
-        }
-
         private void ValidarListaJogadores(List<IJogador> jogadores)
         {
-            if (jogadores == null || !jogadores.Any())
-            {
-                throw new ArgumentException("A lista de jogadores não pode estar vazia");
-            }
-        }
-
-        private void ValidarQuantidadeCartasBaralho(IBaralho baralho)
-        {
-            if (baralho.QuantidadeDeCartasRestantes < MINIMO_CARTAS_BARALHO)
-            {
-                throw new InvalidOperationException("Quantidade insuficiente de cartas no baralho");
-            }
+            ValidacaoService.ValidarListaJogadores(jogadores);
+            ValidacaoService.ValidarJogadoresDuplicados(jogadores);
+            ValidacaoService.ValidarCartasDuplicadas(jogadores);
         }
 
         public async Task<IJogoMaiorCarta> CriarJogoMaiorCartaAsync(int numeroJogadores)
         {
-            ValidarNumeroJogadores(numeroJogadores);
+            ValidacaoService.ValidarNumeroJogadores(numeroJogadores);
 
             return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
             {
@@ -80,8 +55,8 @@ namespace BaralhoDeCartas.Services
 
         public async Task<List<IJogador>> DistribuirCartasAsync(string baralhoId, int numeroJogadores)
         {
-            ValidarBaralhoId(baralhoId);
-            ValidarNumeroJogadores(numeroJogadores);
+            ValidacaoService.ValidarBaralhoId(baralhoId);
+            ValidacaoService.ValidarNumeroJogadores(numeroJogadores);
 
             return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
             {
@@ -111,6 +86,9 @@ namespace BaralhoDeCartas.Services
 
             return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
             {
+                // Verificar se há cartas duplicadas antes de determinar o vencedor
+                ValidacaoService.ValidarCartasDuplicadas(jogadores);
+                
                 return jogadores
                     .OrderByDescending(j => j.ObterCartaDeMaiorValor()?.Valor ?? 0)
                     .FirstOrDefault();
@@ -119,7 +97,7 @@ namespace BaralhoDeCartas.Services
 
         public async Task<IBaralho> FinalizarJogoAsync(string baralhoId)
         {
-            ValidarBaralhoId(baralhoId);
+            ValidacaoService.ValidarBaralhoId(baralhoId);
 
             return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
             {
@@ -129,13 +107,13 @@ namespace BaralhoDeCartas.Services
         
         public async Task<IBaralho> VerificarBaralhoAsync(string baralhoId)
         {
-            ValidarBaralhoId(baralhoId);
+            ValidacaoService.ValidarBaralhoId(baralhoId);
 
             return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
             {
                 var baralho = await _baralhoApiClient.EmbaralharBaralhoAsync(baralhoId, true);
                 
-                ValidarQuantidadeCartasBaralho(baralho);
+                ValidacaoService.ValidarQuantidadeCartasBaralho(baralho, MINIMO_CARTAS_BARALHO);
                 
                 if (baralho.QuantidadeDeCartasRestantes < MINIMO_CARTAS_BARALHO)
                 {
@@ -149,7 +127,7 @@ namespace BaralhoDeCartas.Services
         
         public async Task<IBaralho> EmbaralharBaralhoAsync(string baralhoId, bool embaralharSomenteCartasRestantes)
         {
-            ValidarBaralhoId(baralhoId);
+            ValidacaoService.ValidarBaralhoId(baralhoId);
 
             return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
             {

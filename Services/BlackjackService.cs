@@ -23,46 +23,9 @@ namespace BaralhoDeCartas.Services
             _jogoFactory = jogoFactory;
         }
 
-        private void ValidarNumeroJogadores(int numeroJogadores)
-        {
-            if (numeroJogadores <= 0)
-            {
-                throw new ArgumentException("O número de jogadores deve ser maior que zero");
-            }
-        }
-
-        private void ValidarBaralhoId(string baralhoId)
-        {
-            if (string.IsNullOrEmpty(baralhoId))
-            {
-                throw new ArgumentException("O ID do baralho não pode ser nulo ou vazio");
-            }
-        }
-
-        private void ValidarJogador(IJogadorDeBlackjack jogador)
-        {
-            if (jogador == null)
-            {
-                throw new ArgumentNullException(nameof(jogador), "O jogador não pode ser nulo");
-            }
-
-            if (jogador.Parou || jogador.Estourou)
-            {
-                throw new InvalidOperationException($"O jogador {jogador.Nome} não pode comprar mais cartas.");
-            }
-        }
-
-        private void ValidarListaJogadores(List<IJogadorDeBlackjack> jogadores)
-        {
-            if (jogadores == null || !jogadores.Any())
-            {
-                throw new ArgumentException("A lista de jogadores não pode estar vazia");
-            }
-        }
-
         public async Task<IJogoBlackJack> CriarJogoBlackJackAsync(int numeroJogadores)
         {
-            ValidarNumeroJogadores(numeroJogadores);
+            ValidacaoService.ValidarNumeroJogadores(numeroJogadores, int.MaxValue);
 
             return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
             {
@@ -85,8 +48,8 @@ namespace BaralhoDeCartas.Services
 
         public async Task<List<IJogadorDeBlackjack>> IniciarRodadaAsync(string baralhoId, int numeroJogadores)
         {
-            ValidarBaralhoId(baralhoId);
-            ValidarNumeroJogadores(numeroJogadores);
+            ValidacaoService.ValidarBaralhoId(baralhoId);
+            ValidacaoService.ValidarNumeroJogadores(numeroJogadores, int.MaxValue);
 
             return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
             {
@@ -114,8 +77,8 @@ namespace BaralhoDeCartas.Services
 
         public async Task<ICarta> ComprarCartaAsync(string baralhoId, IJogadorDeBlackjack jogador)
         {
-            ValidarBaralhoId(baralhoId);
-            ValidarJogador(jogador);
+            ValidacaoService.ValidarBaralhoId(baralhoId);
+            ValidacaoService.ValidarJogadorDeBlackjack(jogador);
 
             return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
             {
@@ -135,7 +98,7 @@ namespace BaralhoDeCartas.Services
 
         public List<IJogadorDeBlackjack> DeterminarVencedoresAsync(List<IJogadorDeBlackjack> jogadores)
         {
-            ValidarListaJogadores(jogadores);
+            ValidacaoService.ValidarListaJogadores(jogadores);
 
             return ServiceExceptionHandler.HandleServiceException(() =>
             {
@@ -160,7 +123,7 @@ namespace BaralhoDeCartas.Services
 
         public async Task<IBaralho> RetornarCartasAoBaralhoAsync(string baralhoId)
         {
-            ValidarBaralhoId(baralhoId);
+            ValidacaoService.ValidarBaralhoId(baralhoId);
 
             return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
             {
