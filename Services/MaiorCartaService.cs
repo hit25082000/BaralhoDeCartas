@@ -11,6 +11,7 @@ namespace BaralhoDeCartas.Services
         private readonly IBaralhoApiClient _baralhoApiClient;
         private readonly IJogadorFactory _jogadorFactory;
         private readonly IJogoFactory _jogoFactory;
+        private readonly ILogger<MaiorCartaService> _logger;
         private const int CARTAS_POR_JOGADOR = 5;
 
         public MaiorCartaService(IBaralhoApiClient baralhoApiClient, IJogadorFactory jogadorFactory, IJogoFactory jogoFactory)
