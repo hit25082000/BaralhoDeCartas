@@ -226,8 +226,8 @@ namespace BaralhoDeCartas.Controllers
                     vencedor = new
                     {
                         id = vencedor.JogadorId,
-                        nome = vencedor.Nome,
-                        isComputador = vencedor.JogadorId == 0 // O computador é sempre o jogador 0
+                        nome = vencedor.JogadorId == 1 ? "Computador" : "Jogador " + (vencedor.JogadorId - 1),
+                        isComputador = vencedor.JogadorId == 1
                     }
                 });
             }

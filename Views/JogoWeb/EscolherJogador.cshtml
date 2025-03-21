@@ -9,10 +9,10 @@
 				<div class="card-body">
 					<h5 class="card-title text-center mb-3">Configuração do Jogo</h5>
 					<div class="form-group">
-						<label for="numeroJogadores" class="form-label">Número de Jogadores (2-6):</label>
-						<input type="number" class="form-control" id="numeroJogadores" min="2" max="6" value="2">
+						<label for="numeroJogadores" class="form-label">Número de Jogadores (1-5):</label>
+						<input type="number" class="form-control" id="numeroJogadores" min="1" max="5" value="1">
 						<div class="invalid-feedback">
-							O número de jogadores deve estar entre 2 e 6.
+							O número de jogadores deve estar entre 1 e 5.
 						</div>
 					</div>
 					<button onclick="iniciarJogo()" class="btn btn-primary mt-3">
@@ -174,7 +174,7 @@
 			const numeroJogadoresInput = document.getElementById('numeroJogadores');
 			numeroJogadoresInput.addEventListener('input', function() {
 				const value = parseInt(this.value);
-				const isValid = value >= 2 && value <= 6;
+				const isValid = value >= 1 && value <= 5;
 
 				if (!isValid) {
 					this.classList.add('is-invalid');
@@ -185,13 +185,15 @@
 		});
 
 		function iniciarJogo() {
-			const numeroJogadores = document.getElementById('numeroJogadores').value;
-			const numeroJogadoresInt = parseInt(numeroJogadores);
+			var numeroJogadores = document.getElementById('numeroJogadores').value;
+			var numeroJogadoresInt = parseInt(numeroJogadores);
 
-			if (numeroJogadoresInt < 2 || numeroJogadoresInt > 6) {
-				alert('Por favor, selecione um número válido de jogadores (2-6)');
+			if (numeroJogadoresInt < 1 || numeroJogadoresInt > 5) {
+				alert('Por favor, selecione um número válido de jogadores (1-5)');
 				return;
 			}
+
+			numeroJogadores++
 
 			window.location.href = `/JogoWeb/Index?jogo=maiorcarta&numeroJogadores=${numeroJogadores}`;
 		}

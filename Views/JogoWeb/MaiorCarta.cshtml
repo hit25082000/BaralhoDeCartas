@@ -17,7 +17,7 @@
 				<p>Status: <span class="badge @(Model.Baralho.EstaEmbaralhado ? "bg-success" : "bg-warning")">
 					@(Model.Baralho.EstaEmbaralhado ? "Embaralhado" : "Não Embaralhado")
 				</span></p>
-				<p>Número de Jogadores: <span class="badge bg-success jogadores-badge">@Model.Jogadores.Count</span></p>
+				<p>Número de Jogadores: <span class="badge bg-success jogadores-badge">@(Model.Jogadores.Count - 1)</span></p>
 				<div class="jogadores-icones">
 					@for (int i = 0; i < Model.Jogadores.Count; i++)
 					{
@@ -79,7 +79,7 @@
 											}
 										</div>
 										<div class="mt-2">
-											<span class="badge bg-primary">Pontos: <span id="player-score-@i">0</span></span>
+											<span class="badge bg-primary">Pontos: <span id="player-score-@(i + 1)">0</span></span>
 										</div>
 									</div>
 								</div>
@@ -221,7 +221,7 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify(result.data.map(j => ({
-                            id: j.id,
+							JogadorId: j.id,
                             nome: j.nome,
                             cartas: j.cartas.map(c => ({
                                 valor: c.valor,
@@ -257,8 +257,8 @@
                     } else {
                         messageArea.className = 'alert alert-success';
                         messageArea.textContent = `${vencedor.nome} venceu esta rodada!`;
-                        
-                        const playerScoreId = `player-score-${vencedorId}`;
+
+						const playerScoreId = `player-score-${(vencedorId)}`;
                         console.log(`Procurando elemento de pontuação: #${playerScoreId}`);
                         
                         const playerScoreElement = document.getElementById(playerScoreId);
