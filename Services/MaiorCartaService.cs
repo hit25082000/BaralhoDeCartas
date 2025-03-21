@@ -4,7 +4,7 @@ using BaralhoDeCartas.Factory.Interfaces;
 using BaralhoDeCartas.Models.Interfaces;
 using BaralhoDeCartas.Services.Interfaces;
 using BaralhoDeCartas.Exceptions;
-using Microsoft.Extensions.Logging;
+using BaralhoDeCartas.Common;
 
 namespace BaralhoDeCartas.Services
 {
@@ -59,7 +59,7 @@ namespace BaralhoDeCartas.Services
         {
             ValidarNumeroJogadores(numeroJogadores);
 
-            try
+            return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
             {
                 IBaralho baralho = await _baralhoApiClient.CriarNovoBaralhoAsync();
                 List<IJogador> jogadores = await DistribuirCartasAsync(baralho.BaralhoId, numeroJogadores);
@@ -67,31 +67,15 @@ namespace BaralhoDeCartas.Services
                 baralho.QuantidadeDeCartasRestantes -= jogadores.Sum((jogador) => jogador.Cartas.Count());
 
                 return _jogoFactory.CriarJogoMaiorCarta(jogadores, baralho);
-            }
-            catch (ExternalServiceUnavailableException)
-            {
-                throw;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            });
         }
 
         public async Task<IBaralho> CriarNovoBaralhoAsync()
         {
-            try
+            return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
             {
                 return await _baralhoApiClient.CriarNovoBaralhoAsync();
-            }
-            catch (ExternalServiceUnavailableException)
-            {
-                throw;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            });
         }
 
         public async Task<List<IJogador>> DistribuirCartasAsync(string baralhoId, int numeroJogadores)
@@ -99,7 +83,7 @@ namespace BaralhoDeCartas.Services
             ValidarBaralhoId(baralhoId);
             ValidarNumeroJogadores(numeroJogadores);
 
-            try
+            return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
             {
                 List<IJogador> jogadores = new List<IJogador>();
                 int totalCartas = numeroJogadores * CARTAS_POR_JOGADOR;
@@ -118,64 +102,36 @@ namespace BaralhoDeCartas.Services
                 }
 
                 return jogadores;
-            }
-            catch (BaralhoNotFoundException)
-            {
-                throw;
-            }
-            catch (ExternalServiceUnavailableException)
-            {
-                throw;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            });
         }
 
         public async Task<IJogador> DeterminarVencedorAsync(List<IJogador> jogadores)
         {
             ValidarListaJogadores(jogadores);
 
-            try
+            return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
             {
                 return jogadores
                     .OrderByDescending(j => j.ObterCartaDeMaiorValor()?.Valor ?? 0)
                     .FirstOrDefault();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            });
         }
 
         public async Task<IBaralho> FinalizarJogoAsync(string baralhoId)
         {
             ValidarBaralhoId(baralhoId);
 
-            try
+            return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
             {
                 return await _baralhoApiClient.RetornarCartasAoBaralhoAsync(baralhoId);
-            }
-            catch (BaralhoNotFoundException)
-            {
-                throw;
-            }
-            catch (ExternalServiceUnavailableException)
-            {
-                throw;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            });
         }
         
         public async Task<IBaralho> VerificarBaralhoAsync(string baralhoId)
         {
             ValidarBaralhoId(baralhoId);
 
-            try
+            return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
             {
                 var baralho = await _baralhoApiClient.EmbaralharBaralhoAsync(baralhoId, true);
                 
@@ -188,41 +144,17 @@ namespace BaralhoDeCartas.Services
                 }
                 
                 return baralho;
-            }
-            catch (BaralhoNotFoundException)
-            {
-                throw;
-            }
-            catch (ExternalServiceUnavailableException)
-            {
-                throw;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            });
         }
         
         public async Task<IBaralho> EmbaralharBaralhoAsync(string baralhoId, bool embaralharSomenteCartasRestantes)
         {
             ValidarBaralhoId(baralhoId);
 
-            try
+            return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
             {
                 return await _baralhoApiClient.EmbaralharBaralhoAsync(baralhoId, embaralharSomenteCartasRestantes);
-            }
-            catch (BaralhoNotFoundException)
-            {
-                throw;
-            }
-            catch (ExternalServiceUnavailableException)
-            {
-                throw;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            });
         }
     }
 } 

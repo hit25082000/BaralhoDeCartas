@@ -14,7 +14,7 @@ namespace BaralhoDeCartas.Models
 
         public bool Parou { get; set; }
 
-        public bool Estourou => CalcularPontuacao() > 21;
+        public bool Estourou { get; private set; }
 
         public bool TemBlackjack()
         {
@@ -31,6 +31,11 @@ namespace BaralhoDeCartas.Models
             {
                 pontuacao -= 10;
                 ases--;
+            }
+
+            if(pontuacao > 21)
+            {
+                Estourou = true;
             }
 
             return pontuacao;
